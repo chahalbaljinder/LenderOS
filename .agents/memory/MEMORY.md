@@ -1,0 +1,4 @@
+- [Zod v4 + Orval codegen](zod-orval.md) — Orval 8.x generates Zod v4 syntax; workspace catalog must pin `zod: ^4.0.0`
+- [Clerk proxy optional in dev](clerk-proxy-dev.md) — VITE_CLERK_PROXY_URL should be spread conditionally; DNS errors in preview iframe are normal
+- [API Zod name conventions](api-zod-names.md) — KYC mutation schemas are prefixed: SubmitPanVerificationBody, SubmitAadhaarVerificationBody, etc.
+- [LendingOS backend stack](lendingthos-stack.md) — Express 5 + Drizzle + PG; all routes under /api; seed via tsx artifacts/api-server/src/seed.ts
