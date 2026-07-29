@@ -42,19 +42,19 @@ subgraph api["API Server"]
 end
 
 subgraph data["Data Layer"]
-    PG[("PostgreSQL 16")]
+    PG[(PostgreSQL 16)]
     Drizzle["Drizzle ORM"]
 end
 
 subgraph codegen["Contract Layer"]
     OpenAPI["openapi.yaml"]
     Orval["Orval Codegen"]
-    ZodSchemas["@workspace/api-zod"]
-    ReactHooks["@workspace/api-client-react"]
+    ZodSchemas["api-zod"]
+    ReactHooks["api-client-react"]
 end
 
 RoleSwitcher --> UI
-UI -->|/api/* (x-demo-user-id)| Express
+UI -->|"API requests"| Express
 
 Express --> AuthMW
 AuthMW --> Routes
