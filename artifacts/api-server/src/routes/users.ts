@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { eq, and, desc, count, ilike } from "drizzle-orm";
+import { eq, and, desc, count } from "drizzle-orm";
 import { db, usersTable, tenantsTable } from "@workspace/db";
 import {
   CreateUserBody,
@@ -7,7 +7,7 @@ import {
   UpdateUserBody,
   ListUsersQueryParams,
 } from "@workspace/api-zod";
-import { requireAuth, getOrCreateUser } from "../lib/auth";
+import { requireAuth, getOrCreateUser, isClerkConfigured } from "../lib/auth";
 import { genId } from "../lib/idgen";
 import { getAuth } from "@clerk/express";
 
@@ -15,8 +15,10 @@ const router = Router();
 
 router.get("/users/me", requireAuth, async (req, res): Promise<void> => {
   const clerkId = (req as any).clerkId;
-  const auth = getAuth(req);
-  const email = (auth?.sessionClaims as any)?.email as string | undefined;
+  // Only call getAuth() when clerkMiddleware is mounted; otherwise it throws.
+  const email = isClerkConfigured()
+    ? ((getAuth(req)?.sessionClaims as any)?.email as string | undefined)
+    : undefined;
 
   let user = await getOrCreateUser(clerkId, email ?? `${clerkId}@placeholder.com`);
   if (!user) {

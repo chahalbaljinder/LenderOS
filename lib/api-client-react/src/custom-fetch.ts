@@ -358,6 +358,18 @@ export async function customFetch<T = unknown>(
     }
   }
 
+  // Attach demo user ID header when stored in localStorage for Demo Mode role switching
+  if (typeof window !== "undefined" && !headers.has("x-demo-user-id")) {
+    try {
+      const demoUserId = window.localStorage?.getItem("lenderos_demo_user_id");
+      if (demoUserId) {
+        headers.set("x-demo-user-id", demoUserId);
+      }
+    } catch {
+      // Ignore localStorage read errors in restricted contexts
+    }
+  }
+
   const requestInfo = { method, url: resolveUrl(input) };
 
   const response = await fetch(input, { ...init, method, headers });

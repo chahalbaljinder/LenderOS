@@ -21,11 +21,12 @@ async function seed() {
   ]).onConflictDoNothing();
 
   // Users
-  const u1 = id(), u2 = id(), u3 = id();
+  const u1 = id(), u2 = id(), u3 = id(), u4 = id();
   await db.insert(usersTable).values([
     { id: u1, email: "superadmin@lendingtechplatform.in", firstName: "Arjun", lastName: "Sharma", role: "super_admin", tenantId: null, isActive: true },
     { id: u2, email: "admin@capitalfirst.in", firstName: "Priya", lastName: "Mehta", role: "tenant_admin", tenantId: t1, isActive: true },
     { id: u3, email: "rm@swiftfin.in", firstName: "Rahul", lastName: "Gupta", role: "relationship_manager", tenantId: t2, isActive: true },
+    { id: u4, email: "vikram.singh@gmail.com", firstName: "Vikram", lastName: "Singh", role: "customer", tenantId: t1, isActive: true },
   ]).onConflictDoNothing();
 
   // Customers

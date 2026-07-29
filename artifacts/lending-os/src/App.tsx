@@ -1,5 +1,5 @@
 import { useEffect, useRef, Component, type ReactNode } from "react";
-import { ClerkProvider, SignIn, SignUp, Show, useClerk } from "@clerk/react";
+import { ClerkProvider, SignIn, SignUp, useClerk } from "@clerk/react";
 import { publishableKeyFromHost } from "@clerk/react/internal";
 import { shadcn } from "@clerk/themes";
 import { Switch, Route, useLocation, Router as WouterRouter, Redirect, Link } from "wouter";
@@ -216,7 +216,8 @@ function ClerkSetupScreen() {
 }
 
 function SignInPage() {
-  if (!clerkPubKey) return <ClerkSetupScreen />;
+  // In demo mode skip the setup screen entirely — go straight to dashboard.
+  if (!clerkPubKey) return <Redirect to="/dashboard" />;
   return (
     <div className="flex min-h-[100dvh] items-center justify-center bg-black px-4 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-zinc-900 via-black to-black">
       <SignIn routing="path" path={`${basePath}/sign-in`} signUpUrl={`${basePath}/sign-up`} />
@@ -225,7 +226,8 @@ function SignInPage() {
 }
 
 function SignUpPage() {
-  if (!clerkPubKey) return <ClerkSetupScreen />;
+  // In demo mode skip the setup screen entirely — go straight to dashboard.
+  if (!clerkPubKey) return <Redirect to="/dashboard" />;
   return (
     <div className="flex min-h-[100dvh] items-center justify-center bg-black px-4 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-zinc-900 via-black to-black">
       <SignUp routing="path" path={`${basePath}/sign-up`} signInUrl={`${basePath}/sign-in`} />
@@ -281,17 +283,18 @@ function AppRedirect() {
 }
 
 function HomeRedirect() {
-  if (!clerkPubKey) return <LandingPage />;
-  return (
-    <>
-      <Show when="signed-in">
-        <AppRedirect />
-      </Show>
-      <Show when="signed-out">
-        <LandingPage />
-      </Show>
-    </>
-  );
+  // Demo mode: skip landing / sign-in flow, go straight to the dashboard.
+  if (!clerkPubKey) return <Redirect to="/dashboard" />;
+  // Clerk mode: use a simple hook-based check instead of <Show> which
+  // internally calls useClerk() and crashes when mounted outside ClerkProvider.
+  return <ClerkHomeRedirect />;
+}
+
+function ClerkHomeRedirect() {
+  // This component is ONLY rendered inside <ClerkProvider>, so useClerk is safe.
+  const { user } = useClerk();
+  if (user) return <AppRedirect />;
+  return <LandingPage />;
 }
 
 function DashboardRoute() {
