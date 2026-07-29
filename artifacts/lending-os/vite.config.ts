@@ -5,11 +5,11 @@ import { defineConfig } from 'vite';
 
 import runtimeErrorOverlay from '@replit/vite-plugin-runtime-error-modal';
 
-const rawPort = process.env.PORT;
+const rawPort = process.env.VITE_PORT ?? process.env.PORT;
 
 if (!rawPort) {
   throw new Error(
-    'PORT environment variable is required but was not provided.',
+    'VITE_PORT (or PORT) environment variable is required but was not provided.',
   );
 }
 
@@ -71,6 +71,12 @@ export default defineConfig({
     allowedHosts: true,
     fs: {
       strict: true,
+    },
+    proxy: {
+      '/api': {
+        target: process.env.API_PROXY_TARGET ?? 'http://localhost:5000',
+        changeOrigin: true,
+      },
     },
   },
   preview: {
