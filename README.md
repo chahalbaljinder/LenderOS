@@ -29,37 +29,44 @@ Think of it as **Shopify + Salesforce + Stripe + OpenAI for lending**: one platf
 
 ```mermaid
 flowchart TB
-  subgraph client [Browser / Client]
-    UI[Lending OS UI<br/>React 19 + Vite]
-    RoleSwitcher[Demo Role Switcher UI]
-  end
 
-  subgraph api [API Server]
-    Express[Express 5]
-    AuthMW[Auth Middleware<br/>Clerk / Demo Mode]
-    Routes[Domain Routes]
-  end
+subgraph client["Browser / Client"]
+    UI["Lending OS UI<br>React 19 + Vite"]
+    RoleSwitcher["Demo Role Switcher UI"]
+end
 
-  subgraph data [Data Layer]
-    PG[(PostgreSQL 16)]
-    Drizzle[Drizzle ORM]
-  end
+subgraph api["API Server"]
+    Express["Express 5"]
+    AuthMW["Auth Middleware<br>Clerk / Demo Mode"]
+    Routes["Domain Routes"]
+end
 
-  subgraph codegen [Contract Layer]
-    OpenAPI[openapi.yaml]
-    Orval[Orval Codegen]
-    ZodSchemas[@workspace/api-zod]
-    ReactHooks[@workspace/api-client-react]
-  end
+subgraph data["Data Layer"]
+    PG[("PostgreSQL 16")]
+    Drizzle["Drizzle ORM"]
+end
 
-  UI -->|"/api/* (x-demo-user-id)"| Express
-  Express --> AuthMW --> Routes
-  Routes --> Drizzle --> PG
-  OpenAPI --> Orval
-  Orval --> ZodSchemas
-  Orval --> ReactHooks
-  ReactHooks --> UI
-  Routes --> ZodSchemas
+subgraph codegen["Contract Layer"]
+    OpenAPI["openapi.yaml"]
+    Orval["Orval Codegen"]
+    ZodSchemas["@workspace/api-zod"]
+    ReactHooks["@workspace/api-client-react"]
+end
+
+RoleSwitcher --> UI
+UI -->|/api/* (x-demo-user-id)| Express
+
+Express --> AuthMW
+AuthMW --> Routes
+Routes --> Drizzle
+Drizzle --> PG
+
+OpenAPI --> Orval
+Orval --> ZodSchemas
+Orval --> ReactHooks
+
+ReactHooks --> UI
+Routes --> ZodSchemas
 ```
 
 ### Key Design Principles
