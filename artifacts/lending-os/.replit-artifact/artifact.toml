@@ -1,0 +1,27 @@
+kind = "web"
+previewPath = "/"
+title = "LendingOS — AI Lending Platform"
+version = "1.0.0"
+id = "artifacts/lending-os"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 19589
+
+[services.development]
+run = "pnpm --filter @workspace/lending-os run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/lending-os", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/lending-os/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "19589"
+BASE_PATH = "/"

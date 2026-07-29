@@ -1,0 +1,5 @@
+<svg width="200" height="40" viewBox="0 0 200 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M12 8H20V24H32V32H12V8Z" fill="currentColor"/>
+  <path d="M24 16H32V24H24V16Z" fill="hsl(160 100% 40%)"/>
+  <text x="44" y="26" font-family="sans-serif" font-weight="bold" font-size="20" letter-spacing="-0.5" fill="currentColor">LendingOS</text>
+</svg>

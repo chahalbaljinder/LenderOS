@@ -3,20 +3,48 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: LendingOS — Multi-Tenant AI Lending Operating System API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: tenants
+    description: Tenant management
+  - name: users
+    description: User management
+  - name: customers
+    description: Customer management
+  - name: loan-products
+    description: Loan product catalog
+  - name: loan-applications
+    description: Loan application lifecycle
+  - name: kyc
+    description: KYC verification
+  - name: risk
+    description: Risk engine and AI scoring
+  - name: offers
+    description: Loan offer engine
+  - name: loans
+    description: Active loan management
+  - name: repayments
+    description: EMI and repayment tracking
+  - name: collections
+    description: Collections management
+  - name: analytics
+    description: Analytics and dashboards
+  - name: audit
+    description: Audit logs
+  - name: settings
+    description: Platform settings
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,13 +52,2148 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  # ─── TENANTS ────────────────────────────────────────────────────────────────
+  /tenants:
+    get:
+      operationId: listTenants
+      tags: [tenants]
+      summary: List all tenants
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [active, pending, suspended, inactive]
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [nbfc, bank, lsp, fintech]
+        - name: page
+          in: query
+          schema: { type: integer, default: 1 }
+        - name: limit
+          in: query
+          schema: { type: integer, default: 20 }
+      responses:
+        "200":
+          description: List of tenants
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TenantListResponse"
+    post:
+      operationId: createTenant
+      tags: [tenants]
+      summary: Create a new tenant
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TenantInput"
+      responses:
+        "201":
+          description: Tenant created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Tenant"
+
+  /tenants/{tenantId}:
+    get:
+      operationId: getTenant
+      tags: [tenants]
+      summary: Get tenant by ID
+      parameters:
+        - name: tenantId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Tenant details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Tenant"
+    patch:
+      operationId: updateTenant
+      tags: [tenants]
+      summary: Update tenant
+      parameters:
+        - name: tenantId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TenantUpdate"
+      responses:
+        "200":
+          description: Updated tenant
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Tenant"
+    delete:
+      operationId: deleteTenant
+      tags: [tenants]
+      summary: Delete tenant
+      parameters:
+        - name: tenantId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "204":
+          description: Deleted
+
+  /tenants/{tenantId}/approve:
+    post:
+      operationId: approveTenant
+      tags: [tenants]
+      summary: Approve a pending tenant
+      parameters:
+        - name: tenantId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Tenant approved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Tenant"
+
+  /tenants/{tenantId}/stats:
+    get:
+      operationId: getTenantStats
+      tags: [tenants]
+      summary: Get tenant dashboard statistics
+      parameters:
+        - name: tenantId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Tenant stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TenantStats"
+
+  # ─── USERS ──────────────────────────────────────────────────────────────────
+  /users/me:
+    get:
+      operationId: getMe
+      tags: [users]
+      summary: Get current authenticated user profile
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+    put:
+      operationId: updateMe
+      tags: [users]
+      summary: Update current user profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserProfileUpdate"
+      responses:
+        "200":
+          description: Updated profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+
+  /users:
+    get:
+      operationId: listUsers
+      tags: [users]
+      summary: List users (scoped to tenant for tenant admins)
+      parameters:
+        - name: tenantId
+          in: query
+          schema: { type: string }
+        - name: role
+          in: query
+          schema: { type: string }
+        - name: page
+          in: query
+          schema: { type: integer, default: 1 }
+        - name: limit
+          in: query
+          schema: { type: integer, default: 20 }
+      responses:
+        "200":
+          description: List of users
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserListResponse"
+    post:
+      operationId: createUser
+      tags: [users]
+      summary: Create a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserInput"
+      responses:
+        "201":
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+
+  /users/{userId}:
+    get:
+      operationId: getUser
+      tags: [users]
+      summary: Get user by ID
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: User
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+    patch:
+      operationId: updateUser
+      tags: [users]
+      summary: Update user
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserUpdate"
+      responses:
+        "200":
+          description: Updated user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+
+  # ─── CUSTOMERS ──────────────────────────────────────────────────────────────
+  /customers:
+    get:
+      operationId: listCustomers
+      tags: [customers]
+      summary: List customers for the tenant
+      parameters:
+        - name: search
+          in: query
+          schema: { type: string }
+        - name: status
+          in: query
+          schema: { type: string, enum: [active, inactive, blacklisted] }
+        - name: page
+          in: query
+          schema: { type: integer, default: 1 }
+        - name: limit
+          in: query
+          schema: { type: integer, default: 20 }
+      responses:
+        "200":
+          description: List of customers
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CustomerListResponse"
+    post:
+      operationId: createCustomer
+      tags: [customers]
+      summary: Create a new customer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CustomerInput"
+      responses:
+        "201":
+          description: Customer created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Customer"
+
+  /customers/{customerId}:
+    get:
+      operationId: getCustomer
+      tags: [customers]
+      summary: Get customer by ID
+      parameters:
+        - name: customerId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Customer details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Customer"
+    patch:
+      operationId: updateCustomer
+      tags: [customers]
+      summary: Update customer
+      parameters:
+        - name: customerId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CustomerUpdate"
+      responses:
+        "200":
+          description: Updated customer
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Customer"
+
+  /customers/{customerId}/credit-report:
+    get:
+      operationId: getCustomerCreditReport
+      tags: [customers]
+      summary: Get customer credit bureau report
+      parameters:
+        - name: customerId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Credit report
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreditReport"
+
+  # ─── LOAN PRODUCTS ──────────────────────────────────────────────────────────
+  /loan-products:
+    get:
+      operationId: listLoanProducts
+      tags: [loan-products]
+      summary: List loan products
+      parameters:
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [personal, business, msme, education, medical, home, gold, vehicle, salary_advance, bnpl, credit_line]
+        - name: active
+          in: query
+          schema: { type: boolean }
+        - name: tenantId
+          in: query
+          schema: { type: string }
+      responses:
+        "200":
+          description: Loan products
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LoanProduct"
+    post:
+      operationId: createLoanProduct
+      tags: [loan-products]
+      summary: Create loan product
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoanProductInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoanProduct"
+
+  /loan-products/{productId}:
+    get:
+      operationId: getLoanProduct
+      tags: [loan-products]
+      summary: Get loan product
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Loan product
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoanProduct"
+    patch:
+      operationId: updateLoanProduct
+      tags: [loan-products]
+      summary: Update loan product
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoanProductUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoanProduct"
+
+  # ─── LOAN APPLICATIONS ──────────────────────────────────────────────────────
+  /loan-applications:
+    get:
+      operationId: listLoanApplications
+      tags: [loan-applications]
+      summary: List loan applications
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [draft, submitted, under_review, kyc_pending, kyc_verified, risk_assessment, offer_generated, offer_accepted, esign_pending, approved, disbursed, rejected, withdrawn]
+        - name: customerId
+          in: query
+          schema: { type: string }
+        - name: tenantId
+          in: query
+          schema: { type: string }
+        - name: page
+          in: query
+          schema: { type: integer, default: 1 }
+        - name: limit
+          in: query
+          schema: { type: integer, default: 20 }
+      responses:
+        "200":
+          description: Applications
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoanApplicationListResponse"
+    post:
+      operationId: createLoanApplication
+      tags: [loan-applications]
+      summary: Create loan application
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoanApplicationInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoanApplication"
+
+  /loan-applications/{applicationId}:
+    get:
+      operationId: getLoanApplication
+      tags: [loan-applications]
+      summary: Get loan application
+      parameters:
+        - name: applicationId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Application
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoanApplication"
+    patch:
+      operationId: updateLoanApplication
+      tags: [loan-applications]
+      summary: Update loan application
+      parameters:
+        - name: applicationId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoanApplicationUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoanApplication"
+
+  /loan-applications/{applicationId}/submit:
+    post:
+      operationId: submitLoanApplication
+      tags: [loan-applications]
+      summary: Submit application for review
+      parameters:
+        - name: applicationId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoanApplication"
+
+  /loan-applications/{applicationId}/approve:
+    post:
+      operationId: approveLoanApplication
+      tags: [loan-applications]
+      summary: Approve loan application
+      parameters:
+        - name: applicationId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApplicationApprovalInput"
+      responses:
+        "200":
+          description: Approved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoanApplication"
+
+  /loan-applications/{applicationId}/reject:
+    post:
+      operationId: rejectLoanApplication
+      tags: [loan-applications]
+      summary: Reject loan application
+      parameters:
+        - name: applicationId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApplicationRejectionInput"
+      responses:
+        "200":
+          description: Rejected
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoanApplication"
+
+  /loan-applications/{applicationId}/disburse:
+    post:
+      operationId: disburseLoan
+      tags: [loan-applications]
+      summary: Trigger disbursement
+      parameters:
+        - name: applicationId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DisbursementInput"
+      responses:
+        "200":
+          description: Disbursed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoanApplication"
+
+  # ─── KYC ────────────────────────────────────────────────────────────────────
+  /kyc/{applicationId}:
+    get:
+      operationId: getKycStatus
+      tags: [kyc]
+      summary: Get KYC status for an application
+      parameters:
+        - name: applicationId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: KYC status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/KycStatus"
+
+  /kyc/{applicationId}/pan:
+    post:
+      operationId: submitPanVerification
+      tags: [kyc]
+      summary: Submit PAN verification
+      parameters:
+        - name: applicationId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PanVerificationInput"
+      responses:
+        "200":
+          description: PAN verification result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/KycStatus"
+
+  /kyc/{applicationId}/aadhaar:
+    post:
+      operationId: submitAadhaarVerification
+      tags: [kyc]
+      summary: Submit Aadhaar verification
+      parameters:
+        - name: applicationId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AadhaarVerificationInput"
+      responses:
+        "200":
+          description: Aadhaar verification result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/KycStatus"
+
+  /kyc/{applicationId}/face:
+    post:
+      operationId: submitFaceVerification
+      tags: [kyc]
+      summary: Submit face verification / liveness check
+      parameters:
+        - name: applicationId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FaceVerificationInput"
+      responses:
+        "200":
+          description: Face verification result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/KycStatus"
+
+  /kyc/{applicationId}/employment:
+    post:
+      operationId: submitEmploymentVerification
+      tags: [kyc]
+      summary: Submit employment/income verification
+      parameters:
+        - name: applicationId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EmploymentVerificationInput"
+      responses:
+        "200":
+          description: Employment verification result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/KycStatus"
+
+  # ─── RISK ENGINE ────────────────────────────────────────────────────────────
+  /risk/{applicationId}/score:
+    get:
+      operationId: getRiskScore
+      tags: [risk]
+      summary: Get AI risk score for an application
+      parameters:
+        - name: applicationId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Risk score
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RiskScore"
+
+  /risk/{applicationId}/analyze:
+    post:
+      operationId: analyzeRisk
+      tags: [risk]
+      summary: Trigger AI risk analysis
+      parameters:
+        - name: applicationId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Risk analysis result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RiskScore"
+
+  /risk/{applicationId}/fraud:
+    get:
+      operationId: getFraudFlags
+      tags: [risk]
+      summary: Get fraud detection flags
+      parameters:
+        - name: applicationId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Fraud flags
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FraudFlags"
+
+  # ─── OFFERS ─────────────────────────────────────────────────────────────────
+  /offers/{applicationId}:
+    get:
+      operationId: getOffers
+      tags: [offers]
+      summary: Get loan offers for application
+      parameters:
+        - name: applicationId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Loan offers from multiple NBFCs/Banks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LoanOffer"
+
+  /offers/{applicationId}/accept:
+    post:
+      operationId: acceptOffer
+      tags: [offers]
+      summary: Accept a loan offer
+      parameters:
+        - name: applicationId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OfferAcceptanceInput"
+      responses:
+        "200":
+          description: Offer accepted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoanApplication"
+
+  /offers/calculate-emi:
+    post:
+      operationId: calculateEmi
+      tags: [offers]
+      summary: Calculate EMI for loan parameters
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EmiCalculationInput"
+      responses:
+        "200":
+          description: EMI calculation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EmiCalculation"
+
+  # ─── LOANS ──────────────────────────────────────────────────────────────────
+  /loans:
+    get:
+      operationId: listLoans
+      tags: [loans]
+      summary: List active loans
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [active, closed, npa, written_off]
+        - name: customerId
+          in: query
+          schema: { type: string }
+        - name: page
+          in: query
+          schema: { type: integer, default: 1 }
+        - name: limit
+          in: query
+          schema: { type: integer, default: 20 }
+      responses:
+        "200":
+          description: Loans
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoanListResponse"
+
+  /loans/{loanId}:
+    get:
+      operationId: getLoan
+      tags: [loans]
+      summary: Get loan details
+      parameters:
+        - name: loanId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Loan
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Loan"
+
+  /loans/{loanId}/schedule:
+    get:
+      operationId: getLoanSchedule
+      tags: [loans]
+      summary: Get loan repayment schedule
+      parameters:
+        - name: loanId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Repayment schedule
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RepaymentScheduleItem"
+
+  # ─── REPAYMENTS ─────────────────────────────────────────────────────────────
+  /repayments:
+    get:
+      operationId: listRepayments
+      tags: [repayments]
+      summary: List repayments
+      parameters:
+        - name: loanId
+          in: query
+          schema: { type: string }
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, paid, overdue, partial]
+        - name: page
+          in: query
+          schema: { type: integer, default: 1 }
+        - name: limit
+          in: query
+          schema: { type: integer, default: 20 }
+      responses:
+        "200":
+          description: Repayments
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RepaymentListResponse"
+
+  /repayments/{repaymentId}/record:
+    post:
+      operationId: recordRepayment
+      tags: [repayments]
+      summary: Record a repayment
+      parameters:
+        - name: repaymentId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RepaymentRecordInput"
+      responses:
+        "200":
+          description: Repayment recorded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Repayment"
+
+  # ─── COLLECTIONS ────────────────────────────────────────────────────────────
+  /collections:
+    get:
+      operationId: listCollections
+      tags: [collections]
+      summary: List collection cases
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [new, in_progress, resolved, escalated]
+        - name: priority
+          in: query
+          schema:
+            type: string
+            enum: [low, medium, high, critical]
+        - name: page
+          in: query
+          schema: { type: integer, default: 1 }
+        - name: limit
+          in: query
+          schema: { type: integer, default: 20 }
+      responses:
+        "200":
+          description: Collection cases
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CollectionListResponse"
+
+  /collections/{collectionId}:
+    get:
+      operationId: getCollection
+      tags: [collections]
+      summary: Get collection case
+      parameters:
+        - name: collectionId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Collection case
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Collection"
+    patch:
+      operationId: updateCollection
+      tags: [collections]
+      summary: Update collection case
+      parameters:
+        - name: collectionId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CollectionUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Collection"
+
+  # ─── ANALYTICS ──────────────────────────────────────────────────────────────
+  /analytics/platform-summary:
+    get:
+      operationId: getPlatformSummary
+      tags: [analytics]
+      summary: Super admin platform-wide summary stats
+      responses:
+        "200":
+          description: Platform summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlatformSummary"
+
+  /analytics/tenant-dashboard:
+    get:
+      operationId: getTenantDashboard
+      tags: [analytics]
+      summary: Tenant dashboard metrics
+      parameters:
+        - name: tenantId
+          in: query
+          schema: { type: string }
+        - name: period
+          in: query
+          schema: { type: string, enum: [7d, 30d, 90d, 1y], default: "30d" }
+      responses:
+        "200":
+          description: Tenant dashboard
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TenantDashboard"
+
+  /analytics/loan-funnel:
+    get:
+      operationId: getLoanFunnel
+      tags: [analytics]
+      summary: Loan application funnel analytics
+      parameters:
+        - name: tenantId
+          in: query
+          schema: { type: string }
+        - name: period
+          in: query
+          schema: { type: string, enum: [7d, 30d, 90d, 1y], default: "30d" }
+      responses:
+        "200":
+          description: Funnel data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoanFunnel"
+
+  /analytics/collection-rate:
+    get:
+      operationId: getCollectionRate
+      tags: [analytics]
+      summary: Collection rate over time
+      parameters:
+        - name: tenantId
+          in: query
+          schema: { type: string }
+        - name: period
+          in: query
+          schema: { type: string, enum: [7d, 30d, 90d, 1y], default: "30d" }
+      responses:
+        "200":
+          description: Collection rate
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CollectionRateData"
+
+  /analytics/revenue-trend:
+    get:
+      operationId: getRevenueTrend
+      tags: [analytics]
+      summary: Revenue trend data
+      parameters:
+        - name: tenantId
+          in: query
+          schema: { type: string }
+        - name: period
+          in: query
+          schema: { type: string, enum: [7d, 30d, 90d, 1y], default: "30d" }
+      responses:
+        "200":
+          description: Revenue trend
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RevenueTrend"
+
+  # ─── AUDIT LOGS ─────────────────────────────────────────────────────────────
+  /audit-logs:
+    get:
+      operationId: listAuditLogs
+      tags: [audit]
+      summary: List audit logs
+      parameters:
+        - name: entityType
+          in: query
+          schema: { type: string }
+        - name: entityId
+          in: query
+          schema: { type: string }
+        - name: action
+          in: query
+          schema: { type: string }
+        - name: userId
+          in: query
+          schema: { type: string }
+        - name: page
+          in: query
+          schema: { type: integer, default: 1 }
+        - name: limit
+          in: query
+          schema: { type: integer, default: 50 }
+      responses:
+        "200":
+          description: Audit logs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuditLogListResponse"
+
+  # ─── SETTINGS ───────────────────────────────────────────────────────────────
+  /settings/tenant/{tenantId}:
+    get:
+      operationId: getTenantSettings
+      tags: [settings]
+      summary: Get tenant settings and branding
+      parameters:
+        - name: tenantId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TenantSettings"
+    put:
+      operationId: updateTenantSettings
+      tags: [settings]
+      summary: Update tenant settings
+      parameters:
+        - name: tenantId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TenantSettingsUpdate"
+      responses:
+        "200":
+          description: Updated settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TenantSettings"
+
+  /settings/api-keys:
+    get:
+      operationId: listApiKeys
+      tags: [settings]
+      summary: List API keys for tenant
+      responses:
+        "200":
+          description: API keys
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ApiKey"
+    post:
+      operationId: createApiKey
+      tags: [settings]
+      summary: Create new API key
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApiKeyInput"
+      responses:
+        "201":
+          description: Created API key
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiKey"
+
+  /settings/api-keys/{keyId}:
+    delete:
+      operationId: revokeApiKey
+      tags: [settings]
+      summary: Revoke API key
+      parameters:
+        - name: keyId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "204":
+          description: Revoked
+
 components:
   schemas:
     HealthStatus:
       type: object
+      required: [status]
+      properties:
+        status: { type: string }
+
+    # ── TENANTS ────────────────────────────────────────────────────────────────
+    Tenant:
+      type: object
+      required: [id, name, type, status, createdAt]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        type:
+          type: string
+          enum: [nbfc, bank, lsp, fintech]
+        status:
+          type: string
+          enum: [active, pending, suspended, inactive]
+        domain: { type: ["string", "null"] }
+        logo: { type: ["string", "null"] }
+        primaryColor: { type: ["string", "null"] }
+        contactEmail: { type: string }
+        contactPhone: { type: ["string", "null"] }
+        licenseNumber: { type: ["string", "null"] }
+        totalLoans: { type: integer }
+        totalCustomers: { type: integer }
+        totalDisbursed: { type: number }
+        createdAt: { type: string }
+        updatedAt: { type: string }
+
+    TenantInput:
+      type: object
+      required: [name, type, contactEmail]
+      properties:
+        name: { type: string }
+        type:
+          type: string
+          enum: [nbfc, bank, lsp, fintech]
+        contactEmail: { type: string }
+        contactPhone: { type: string }
+        domain: { type: string }
+        logo: { type: string }
+        primaryColor: { type: string }
+        licenseNumber: { type: string }
+
+    TenantUpdate:
+      type: object
+      properties:
+        name: { type: string }
+        contactEmail: { type: string }
+        contactPhone: { type: string }
+        domain: { type: string }
+        logo: { type: string }
+        primaryColor: { type: string }
+        status:
+          type: string
+          enum: [active, pending, suspended, inactive]
+        licenseNumber: { type: string }
+
+    TenantListResponse:
+      type: object
+      required: [data, total, page, limit]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Tenant"
+        total: { type: integer }
+        page: { type: integer }
+        limit: { type: integer }
+
+    TenantStats:
+      type: object
+      required: [totalApplications, totalLoans, totalDisbursed, totalCollections, activeCustomers, defaultRate, approvalRate]
+      properties:
+        totalApplications: { type: integer }
+        totalLoans: { type: integer }
+        totalDisbursed: { type: number }
+        totalCollections: { type: number }
+        activeCustomers: { type: integer }
+        defaultRate: { type: number }
+        approvalRate: { type: number }
+        pendingApplications: { type: integer }
+        overdueLoans: { type: integer }
+
+    TenantSettings:
+      type: object
+      required: [tenantId]
+      properties:
+        tenantId: { type: string }
+        primaryColor: { type: ["string", "null"] }
+        secondaryColor: { type: ["string", "null"] }
+        logo: { type: ["string", "null"] }
+        favicon: { type: ["string", "null"] }
+        domain: { type: ["string", "null"] }
+        emailFromName: { type: ["string", "null"] }
+        emailFromAddress: { type: ["string", "null"] }
+        smsProvider: { type: ["string", "null"] }
+        whatsappEnabled: { type: boolean }
+        autoApprovalEnabled: { type: boolean }
+        maxLoanAmount: { type: ["number", "null"] }
+        minCreditScore: { type: ["integer", "null"] }
+
+    TenantSettingsUpdate:
+      type: object
+      properties:
+        primaryColor: { type: string }
+        secondaryColor: { type: string }
+        logo: { type: string }
+        favicon: { type: string }
+        domain: { type: string }
+        emailFromName: { type: string }
+        emailFromAddress: { type: string }
+        smsProvider: { type: string }
+        whatsappEnabled: { type: boolean }
+        autoApprovalEnabled: { type: boolean }
+        maxLoanAmount: { type: number }
+        minCreditScore: { type: integer }
+
+    # ── USERS ──────────────────────────────────────────────────────────────────
+    UserProfile:
+      type: object
+      required: [id, email, role, createdAt]
+      properties:
+        id: { type: string }
+        clerkId: { type: ["string", "null"] }
+        email: { type: string }
+        firstName: { type: ["string", "null"] }
+        lastName: { type: ["string", "null"] }
+        phone: { type: ["string", "null"] }
+        role:
+          type: string
+          enum: [super_admin, platform_admin, tenant_owner, tenant_admin, risk_manager, loan_manager, collection_manager, customer_support, sales_agent, dsa, relationship_manager, customer, auditor, compliance_officer]
+        tenantId: { type: ["string", "null"] }
+        tenantName: { type: ["string", "null"] }
+        isActive: { type: boolean }
+        lastLoginAt: { type: ["string", "null"] }
+        createdAt: { type: string }
+
+    UserInput:
+      type: object
+      required: [email, role]
+      properties:
+        email: { type: string }
+        firstName: { type: string }
+        lastName: { type: string }
+        phone: { type: string }
+        role:
+          type: string
+          enum: [tenant_owner, tenant_admin, risk_manager, loan_manager, collection_manager, customer_support, sales_agent, dsa, relationship_manager, customer, auditor, compliance_officer]
+        tenantId: { type: string }
+
+    UserUpdate:
+      type: object
+      properties:
+        firstName: { type: string }
+        lastName: { type: string }
+        phone: { type: string }
+        role: { type: string }
+        isActive: { type: boolean }
+
+    UserProfileUpdate:
+      type: object
+      properties:
+        firstName: { type: string }
+        lastName: { type: string }
+        phone: { type: string }
+
+    UserListResponse:
+      type: object
+      required: [data, total, page, limit]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/UserProfile"
+        total: { type: integer }
+        page: { type: integer }
+        limit: { type: integer }
+
+    # ── CUSTOMERS ─────────────────────────────────────────────────────────────
+    Customer:
+      type: object
+      required: [id, firstName, lastName, email, createdAt]
+      properties:
+        id: { type: string }
+        tenantId: { type: string }
+        firstName: { type: string }
+        lastName: { type: string }
+        email: { type: string }
+        phone: { type: string }
+        dateOfBirth: { type: ["string", "null"] }
+        gender: { type: ["string", "null"] }
+        panNumber: { type: ["string", "null"] }
+        aadhaarNumber: { type: ["string", "null"] }
+        address: { type: ["string", "null"] }
+        city: { type: ["string", "null"] }
+        state: { type: ["string", "null"] }
+        pincode: { type: ["string", "null"] }
+        employmentType:
+          type: ["string", "null"]
+          enum: [salaried, self_employed, business, student, retired, null]
+        monthlyIncome: { type: ["number", "null"] }
+        creditScore: { type: ["integer", "null"] }
+        kycStatus:
+          type: string
+          enum: [pending, partial, verified, rejected]
+        status:
+          type: string
+          enum: [active, inactive, blacklisted]
+        totalLoans: { type: integer }
+        activeLoans: { type: integer }
+        createdAt: { type: string }
+        updatedAt: { type: string }
+
+    CustomerInput:
+      type: object
+      required: [firstName, lastName, email, phone]
+      properties:
+        firstName: { type: string }
+        lastName: { type: string }
+        email: { type: string }
+        phone: { type: string }
+        dateOfBirth: { type: string }
+        gender: { type: string }
+        panNumber: { type: string }
+        address: { type: string }
+        city: { type: string }
+        state: { type: string }
+        pincode: { type: string }
+        employmentType: { type: string }
+        monthlyIncome: { type: number }
+
+    CustomerUpdate:
+      type: object
+      properties:
+        firstName: { type: string }
+        lastName: { type: string }
+        phone: { type: string }
+        dateOfBirth: { type: string }
+        address: { type: string }
+        city: { type: string }
+        state: { type: string }
+        pincode: { type: string }
+        employmentType: { type: string }
+        monthlyIncome: { type: number }
+        status: { type: string }
+
+    CustomerListResponse:
+      type: object
+      required: [data, total, page, limit]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Customer"
+        total: { type: integer }
+        page: { type: integer }
+        limit: { type: integer }
+
+    CreditReport:
+      type: object
+      required: [customerId, creditScore, bureau]
+      properties:
+        customerId: { type: string }
+        creditScore: { type: integer }
+        bureau: { type: string }
+        totalAccounts: { type: integer }
+        activeAccounts: { type: integer }
+        closedAccounts: { type: integer }
+        totalOutstanding: { type: number }
+        overdueAmount: { type: number }
+        paymentHistory: { type: string }
+        inquiries30Days: { type: integer }
+        reportDate: { type: string }
+
+    # ── LOAN PRODUCTS ─────────────────────────────────────────────────────────
+    LoanProduct:
+      type: object
+      required: [id, tenantId, name, type, minAmount, maxAmount, minTenureMonths, maxTenureMonths, interestRate, isActive, createdAt]
+      properties:
+        id: { type: string }
+        tenantId: { type: string }
+        name: { type: string }
+        description: { type: ["string", "null"] }
+        type:
+          type: string
+          enum: [personal, business, msme, education, medical, home, gold, vehicle, salary_advance, bnpl, credit_line]
+        minAmount: { type: number }
+        maxAmount: { type: number }
+        minTenureMonths: { type: integer }
+        maxTenureMonths: { type: integer }
+        interestRate: { type: number }
+        processingFeePercent: { type: number }
+        prepaymentPenaltyPercent: { type: number }
+        isActive: { type: boolean }
+        requiredDocuments:
+          type: array
+          items: { type: string }
+        eligibilityCriteria: { type: ["string", "null"] }
+        createdAt: { type: string }
+
+    LoanProductInput:
+      type: object
+      required: [name, type, minAmount, maxAmount, minTenureMonths, maxTenureMonths, interestRate]
+      properties:
+        name: { type: string }
+        description: { type: string }
+        type:
+          type: string
+          enum: [personal, business, msme, education, medical, home, gold, vehicle, salary_advance, bnpl, credit_line]
+        minAmount: { type: number }
+        maxAmount: { type: number }
+        minTenureMonths: { type: integer }
+        maxTenureMonths: { type: integer }
+        interestRate: { type: number }
+        processingFeePercent: { type: number }
+        prepaymentPenaltyPercent: { type: number }
+        isActive: { type: boolean }
+        requiredDocuments:
+          type: array
+          items: { type: string }
+        eligibilityCriteria: { type: string }
+
+    LoanProductUpdate:
+      type: object
+      properties:
+        name: { type: string }
+        description: { type: string }
+        minAmount: { type: number }
+        maxAmount: { type: number }
+        interestRate: { type: number }
+        processingFeePercent: { type: number }
+        isActive: { type: boolean }
+
+    # ── LOAN APPLICATIONS ─────────────────────────────────────────────────────
+    LoanApplication:
+      type: object
+      required: [id, customerId, tenantId, productId, requestedAmount, requestedTenure, purpose, status, createdAt]
+      properties:
+        id: { type: string }
+        applicationNumber: { type: string }
+        customerId: { type: string }
+        customerName: { type: string }
+        tenantId: { type: string }
+        tenantName: { type: string }
+        productId: { type: string }
+        productName: { type: string }
+        requestedAmount: { type: number }
+        requestedTenure: { type: integer }
+        purpose: { type: string }
+        status:
+          type: string
+          enum: [draft, submitted, under_review, kyc_pending, kyc_verified, risk_assessment, offer_generated, offer_accepted, esign_pending, approved, disbursed, rejected, withdrawn]
+        riskScore: { type: ["number", "null"] }
+        riskGrade: { type: ["string", "null"] }
+        approvedAmount: { type: ["number", "null"] }
+        approvedTenure: { type: ["integer", "null"] }
+        approvedRate: { type: ["number", "null"] }
+        rejectionReason: { type: ["string", "null"] }
+        disbursedAt: { type: ["string", "null"] }
+        bankAccount: { type: ["string", "null"] }
+        ifscCode: { type: ["string", "null"] }
+        createdAt: { type: string }
+        updatedAt: { type: string }
+
+    LoanApplicationInput:
+      type: object
+      required: [customerId, productId, requestedAmount, requestedTenure, purpose]
+      properties:
+        customerId: { type: string }
+        productId: { type: string }
+        requestedAmount: { type: number }
+        requestedTenure: { type: integer }
+        purpose: { type: string }
+        bankAccount: { type: string }
+        ifscCode: { type: string }
+
+    LoanApplicationUpdate:
+      type: object
+      properties:
+        requestedAmount: { type: number }
+        requestedTenure: { type: integer }
+        purpose: { type: string }
+        bankAccount: { type: string }
+        ifscCode: { type: string }
+
+    LoanApplicationListResponse:
+      type: object
+      required: [data, total, page, limit]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/LoanApplication"
+        total: { type: integer }
+        page: { type: integer }
+        limit: { type: integer }
+
+    ApplicationApprovalInput:
+      type: object
+      required: [approvedAmount, approvedTenure, approvedRate]
+      properties:
+        approvedAmount: { type: number }
+        approvedTenure: { type: integer }
+        approvedRate: { type: number }
+        notes: { type: string }
+
+    ApplicationRejectionInput:
+      type: object
+      required: [reason]
+      properties:
+        reason: { type: string }
+
+    DisbursementInput:
+      type: object
+      required: [bankAccount, ifscCode]
+      properties:
+        bankAccount: { type: string }
+        ifscCode: { type: string }
+        disbursementMode: { type: string, enum: [neft, imps, upi] }
+        notes: { type: string }
+
+    # ── KYC ───────────────────────────────────────────────────────────────────
+    KycStatus:
+      type: object
+      required: [applicationId, overallStatus]
+      properties:
+        applicationId: { type: string }
+        overallStatus:
+          type: string
+          enum: [pending, partial, verified, rejected]
+        panStatus: { type: string, enum: [pending, verified, failed] }
+        aadhaarStatus: { type: string, enum: [pending, verified, failed] }
+        faceStatus: { type: string, enum: [pending, verified, failed] }
+        employmentStatus: { type: string, enum: [pending, verified, failed] }
+        panNumber: { type: ["string", "null"] }
+        aadhaarNumber: { type: ["string", "null"] }
+        verifiedAt: { type: ["string", "null"] }
+
+    PanVerificationInput:
+      type: object
+      required: [panNumber, dateOfBirth, name]
+      properties:
+        panNumber: { type: string }
+        dateOfBirth: { type: string }
+        name: { type: string }
+
+    AadhaarVerificationInput:
+      type: object
+      required: [aadhaarNumber]
+      properties:
+        aadhaarNumber: { type: string }
+        otp: { type: string }
+
+    FaceVerificationInput:
+      type: object
+      required: [imageBase64]
+      properties:
+        imageBase64: { type: string }
+
+    EmploymentVerificationInput:
+      type: object
+      required: [employmentType, employerName, monthlyIncome]
+      properties:
+        employmentType: { type: string }
+        employerName: { type: string }
+        monthlyIncome: { type: number }
+        designation: { type: string }
+        employmentStartDate: { type: string }
+
+    # ── RISK ──────────────────────────────────────────────────────────────────
+    RiskScore:
+      type: object
+      required: [applicationId, score, grade, recommendation]
+      properties:
+        applicationId: { type: string }
+        score: { type: number }
+        grade:
+          type: string
+          enum: [A1, A2, B1, B2, C1, C2, D, E]
+        recommendation:
+          type: string
+          enum: [approve, approve_with_conditions, review, reject]
+        creditScoreWeight: { type: number }
+        incomeWeight: { type: number }
+        debtToIncomeRatio: { type: number }
+        employmentStabilityScore: { type: number }
+        fraudRiskScore: { type: number }
+        explanation: { type: string }
+        computedAt: { type: string }
+
+    FraudFlags:
+      type: object
+      required: [applicationId, isFraudulent, riskLevel]
+      properties:
+        applicationId: { type: string }
+        isFraudulent: { type: boolean }
+        riskLevel:
+          type: string
+          enum: [low, medium, high, critical]
+        flags:
+          type: array
+          items:
+            type: object
+            required: [type, description, severity]
+            properties:
+              type: { type: string }
+              description: { type: string }
+              severity:
+                type: string
+                enum: [low, medium, high]
+        checkedAt: { type: string }
+
+    # ── OFFERS ────────────────────────────────────────────────────────────────
+    LoanOffer:
+      type: object
+      required: [id, applicationId, tenantId, tenantName, offeredAmount, tenure, interestRate, emi, processingFee, expiresAt]
+      properties:
+        id: { type: string }
+        applicationId: { type: string }
+        tenantId: { type: string }
+        tenantName: { type: string }
+        tenantLogo: { type: ["string", "null"] }
+        offeredAmount: { type: number }
+        tenure: { type: integer }
+        interestRate: { type: number }
+        emi: { type: number }
+        processingFee: { type: number }
+        totalInterest: { type: number }
+        totalRepayable: { type: number }
+        approvalProbability: { type: number }
+        disbursementTime: { type: string }
+        expiresAt: { type: string }
+        isAccepted: { type: boolean }
+
+    OfferAcceptanceInput:
+      type: object
+      required: [offerId]
+      properties:
+        offerId: { type: string }
+
+    EmiCalculationInput:
+      type: object
+      required: [principal, annualRate, tenureMonths]
+      properties:
+        principal: { type: number }
+        annualRate: { type: number }
+        tenureMonths: { type: integer }
+
+    EmiCalculation:
+      type: object
+      required: [emi, totalPayable, totalInterest, processingFee]
+      properties:
+        emi: { type: number }
+        totalPayable: { type: number }
+        totalInterest: { type: number }
+        processingFee: { type: number }
+        schedule:
+          type: array
+          items:
+            $ref: "#/components/schemas/RepaymentScheduleItem"
+
+    # ── LOANS ─────────────────────────────────────────────────────────────────
+    Loan:
+      type: object
+      required: [id, applicationId, customerId, tenantId, principalAmount, outstandingAmount, interestRate, tenure, emiAmount, status, disbursedAt]
+      properties:
+        id: { type: string }
+        loanNumber: { type: string }
+        applicationId: { type: string }
+        customerId: { type: string }
+        customerName: { type: string }
+        tenantId: { type: string }
+        principalAmount: { type: number }
+        outstandingAmount: { type: number }
+        totalPaid: { type: number }
+        interestRate: { type: number }
+        tenure: { type: integer }
+        emiAmount: { type: number }
+        nextEmiDate: { type: ["string", "null"] }
+        status:
+          type: string
+          enum: [active, closed, npa, written_off]
+        dpd: { type: integer }
+        disbursedAt: { type: string }
+        closedAt: { type: ["string", "null"] }
+
+    LoanListResponse:
+      type: object
+      required: [data, total, page, limit]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Loan"
+        total: { type: integer }
+        page: { type: integer }
+        limit: { type: integer }
+
+    RepaymentScheduleItem:
+      type: object
+      required: [installmentNumber, dueDate, emiAmount, principal, interest, outstandingAfter]
+      properties:
+        installmentNumber: { type: integer }
+        dueDate: { type: string }
+        emiAmount: { type: number }
+        principal: { type: number }
+        interest: { type: number }
+        outstandingAfter: { type: number }
+        status:
+          type: string
+          enum: [pending, paid, overdue, partial]
+        paidAt: { type: ["string", "null"] }
+        paidAmount: { type: ["number", "null"] }
+
+    # ── REPAYMENTS ────────────────────────────────────────────────────────────
+    Repayment:
+      type: object
+      required: [id, loanId, dueDate, emiAmount, status]
+      properties:
+        id: { type: string }
+        loanId: { type: string }
+        customerId: { type: string }
+        customerName: { type: string }
+        installmentNumber: { type: integer }
+        dueDate: { type: string }
+        emiAmount: { type: number }
+        paidAmount: { type: ["number", "null"] }
+        paidAt: { type: ["string", "null"] }
+        paymentMode: { type: ["string", "null"] }
+        status:
+          type: string
+          enum: [pending, paid, overdue, partial]
+        dpd: { type: integer }
+        penaltyAmount: { type: number }
+
+    RepaymentListResponse:
+      type: object
+      required: [data, total, page, limit]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Repayment"
+        total: { type: integer }
+        page: { type: integer }
+        limit: { type: integer }
+
+    RepaymentRecordInput:
+      type: object
+      required: [paidAmount, paymentMode]
+      properties:
+        paidAmount: { type: number }
+        paymentMode:
+          type: string
+          enum: [cash, upi, neft, imps, cheque, auto_debit]
+        transactionId: { type: string }
+        paidAt: { type: string }
+
+    # ── COLLECTIONS ───────────────────────────────────────────────────────────
+    Collection:
+      type: object
+      required: [id, loanId, customerId, overdueAmount, dpd, status, priority]
+      properties:
+        id: { type: string }
+        loanId: { type: string }
+        loanNumber: { type: string }
+        customerId: { type: string }
+        customerName: { type: string }
+        customerPhone: { type: string }
+        overdueAmount: { type: number }
+        dpd: { type: integer }
+        status:
+          type: string
+          enum: [new, in_progress, resolved, escalated]
+        priority:
+          type: string
+          enum: [low, medium, high, critical]
+        aiPriorityScore: { type: ["number", "null"] }
+        assignedTo: { type: ["string", "null"] }
+        lastContactAt: { type: ["string", "null"] }
+        nextFollowUpAt: { type: ["string", "null"] }
+        notes: { type: ["string", "null"] }
+        createdAt: { type: string }
+
+    CollectionUpdate:
+      type: object
       properties:
         status:
           type: string
-      required:
-        - status
+          enum: [new, in_progress, resolved, escalated]
+        priority:
+          type: string
+          enum: [low, medium, high, critical]
+        assignedTo: { type: string }
+        nextFollowUpAt: { type: string }
+        notes: { type: string }
 
+    CollectionListResponse:
+      type: object
+      required: [data, total, page, limit]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Collection"
+        total: { type: integer }
+        page: { type: integer }
+        limit: { type: integer }
+
+    # ── ANALYTICS ─────────────────────────────────────────────────────────────
+    PlatformSummary:
+      type: object
+      required: [totalTenants, activeTenants, totalCustomers, totalApplications, totalDisbursed, totalOutstanding, defaultRate, platformRevenue]
+      properties:
+        totalTenants: { type: integer }
+        activeTenants: { type: integer }
+        pendingTenants: { type: integer }
+        totalCustomers: { type: integer }
+        totalApplications: { type: integer }
+        approvedApplications: { type: integer }
+        rejectedApplications: { type: integer }
+        totalDisbursed: { type: number }
+        totalOutstanding: { type: number }
+        defaultRate: { type: number }
+        collectionRate: { type: number }
+        platformRevenue: { type: number }
+        topTenants:
+          type: array
+          items:
+            type: object
+            required: [tenantId, name, disbursed]
+            properties:
+              tenantId: { type: string }
+              name: { type: string }
+              disbursed: { type: number }
+
+    TenantDashboard:
+      type: object
+      required: [period, applications, disbursals, collections, revenue, customers]
+      properties:
+        period: { type: string }
+        applications:
+          type: object
+          required: [total, approved, rejected, pending]
+          properties:
+            total: { type: integer }
+            approved: { type: integer }
+            rejected: { type: integer }
+            pending: { type: integer }
+        disbursals:
+          type: object
+          required: [total, amount]
+          properties:
+            total: { type: integer }
+            amount: { type: number }
+        collections:
+          type: object
+          required: [collected, overdue, rate]
+          properties:
+            collected: { type: number }
+            overdue: { type: number }
+            rate: { type: number }
+        revenue:
+          type: object
+          required: [interest, fees, total]
+          properties:
+            interest: { type: number }
+            fees: { type: number }
+            total: { type: number }
+        customers:
+          type: object
+          required: [new, active, total]
+          properties:
+            new: { type: integer }
+            active: { type: integer }
+            total: { type: integer }
+        trend:
+          type: array
+          items:
+            type: object
+            required: [date, disbursals, collections]
+            properties:
+              date: { type: string }
+              disbursals: { type: number }
+              collections: { type: number }
+
+    LoanFunnel:
+      type: object
+      required: [period, stages]
+      properties:
+        period: { type: string }
+        stages:
+          type: array
+          items:
+            type: object
+            required: [stage, count, dropoff]
+            properties:
+              stage: { type: string }
+              count: { type: integer }
+              dropoff: { type: number }
+
+    CollectionRateData:
+      type: object
+      required: [period, overallRate, trend]
+      properties:
+        period: { type: string }
+        overallRate: { type: number }
+        trend:
+          type: array
+          items:
+            type: object
+            required: [date, rate, collected, overdue]
+            properties:
+              date: { type: string }
+              rate: { type: number }
+              collected: { type: number }
+              overdue: { type: number }
+
+    RevenueTrend:
+      type: object
+      required: [period, total, trend]
+      properties:
+        period: { type: string }
+        total: { type: number }
+        trend:
+          type: array
+          items:
+            type: object
+            required: [date, interest, fees, total]
+            properties:
+              date: { type: string }
+              interest: { type: number }
+              fees: { type: number }
+              total: { type: number }
+
+    # ── AUDIT LOGS ────────────────────────────────────────────────────────────
+    AuditLog:
+      type: object
+      required: [id, action, entityType, userId, createdAt]
+      properties:
+        id: { type: string }
+        action: { type: string }
+        entityType: { type: string }
+        entityId: { type: ["string", "null"] }
+        userId: { type: string }
+        userName: { type: string }
+        tenantId: { type: ["string", "null"] }
+        ipAddress: { type: ["string", "null"] }
+        userAgent: { type: ["string", "null"] }
+        changes: { type: ["object", "null"] }
+        createdAt: { type: string }
+
+    AuditLogListResponse:
+      type: object
+      required: [data, total, page, limit]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/AuditLog"
+        total: { type: integer }
+        page: { type: integer }
+        limit: { type: integer }
+
+    # ── API KEYS ──────────────────────────────────────────────────────────────
+    ApiKey:
+      type: object
+      required: [id, name, keyPrefix, tenantId, isActive, createdAt]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        keyPrefix: { type: string }
+        tenantId: { type: string }
+        isActive: { type: boolean }
+        lastUsedAt: { type: ["string", "null"] }
+        expiresAt: { type: ["string", "null"] }
+        createdAt: { type: string }
+
+    ApiKeyInput:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string }
+        expiresAt: { type: string }

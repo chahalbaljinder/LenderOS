@@ -1,0 +1,779 @@
+You are a team consisting of:
+
+- Principal Software Architect
+- Senior Product Manager
+- Senior UI/UX Designer
+- Senior Backend Engineer
+- Senior Frontend Engineer
+- AI Engineer
+- DevOps Engineer
+- Security Engineer
+- Fintech Domain Expert
+- Enterprise SaaS Architect
+
+Your task is to build a production-grade MULTI-TENANT AI Lending Operating System.
+
+The system should NOT be a single loan application.
+
+Instead, it should become a SaaS platform where multiple NBFCs, Banks, Fintechs and Lending Service Providers (LSPs) can onboard independently and use the platform with complete tenant isolation.
+
+Think of it as:
+
+"Shopify + Salesforce + Stripe + OpenAI for Lending."
+
+The application should have enterprise-grade architecture.
+
+--------------------------------------------------------
+
+TECH STACK
+
+Frontend
+
+Next.js 15
+React 19
+TypeScript
+TailwindCSS
+ShadCN UI
+Framer Motion
+
+Backend
+
+NestJS
+Node.js
+TypeScript
+
+Database
+
+PostgreSQL
+
+ORM
+
+Prisma
+
+Authentication
+
+Clerk/Auth.js
+
+Cache
+
+Redis
+
+Queue
+
+RabbitMQ
+
+Storage
+
+AWS S3 Compatible
+
+Notifications
+
+Email
+SMS
+WhatsApp
+
+Payments
+
+Razorpay
+Cashfree
+
+Deployment
+
+Docker
+Kubernetes Ready
+
+Cloud
+
+AWS
+
+--------------------------------------------------------
+
+ARCHITECTURE
+
+Use Domain Driven Design.
+
+Use Clean Architecture.
+
+Use SOLID principles.
+
+Use Repository Pattern.
+
+Use CQRS where required.
+
+Use Feature Modules.
+
+Use RBAC.
+
+Use Audit Logging.
+
+Use Event Driven Architecture.
+
+--------------------------------------------------------
+
+MULTI TENANCY
+
+Every NBFC should be a tenant.
+
+Every Bank should be a tenant.
+
+Every LSP should be a tenant.
+
+Each tenant must have
+
+Users
+
+Roles
+
+Branding
+
+Theme
+
+Logo
+
+Own Customers
+
+Own Loan Products
+
+Own Risk Rules
+
+Own API Keys
+
+Own Reports
+
+Own Integrations
+
+Own Dashboard
+
+Own Collections
+
+Own Settings
+
+Tenant isolation must be enforced.
+
+--------------------------------------------------------
+
+USER TYPES
+
+Super Admin
+
+Platform Admin
+
+Tenant Owner
+
+Tenant Admin
+
+Risk Manager
+
+Loan Manager
+
+Collection Manager
+
+Customer Support
+
+Sales Agent
+
+DSA
+
+Relationship Manager
+
+Customer
+
+Auditor
+
+Compliance Officer
+
+--------------------------------------------------------
+
+MODULES
+
+Authentication
+
+RBAC
+
+Organization
+
+Tenant Management
+
+Customer Management
+
+Loan Origination
+
+Loan Products
+
+KYC
+
+OCR
+
+Face Verification
+
+Bank Statement Upload
+
+Employment Verification
+
+Income Analysis
+
+Risk Engine
+
+AI Underwriting
+
+Fraud Detection
+
+Offer Engine
+
+Loan Approval
+
+eSign
+
+Disbursement
+
+Repayment
+
+EMI Calculator
+
+Collections
+
+Insurance Marketplace
+
+Credit Card Marketplace
+
+Business Loans
+
+Gold Loans
+
+Salary Advance
+
+BNPL
+
+MSME Loans
+
+Analytics
+
+Reports
+
+Settings
+
+Notification Center
+
+Audit Logs
+
+Workflow Builder
+
+API Management
+
+Partner Management
+
+NBFC Management
+
+Bank Management
+
+LSP Management
+
+--------------------------------------------------------
+
+LANDING PAGE
+
+Modern
+
+Animated
+
+Professional
+
+Glassmorphism
+
+Dark and Light Theme
+
+Sections
+
+Hero
+
+Features
+
+Statistics
+
+AI
+
+NBFC Partners
+
+Banks
+
+Marketplace
+
+Testimonials
+
+Pricing
+
+FAQ
+
+Footer
+
+--------------------------------------------------------
+
+CUSTOMER JOURNEY
+
+Landing Page
+
+↓
+
+Signup
+
+↓
+
+OTP Verification
+
+↓
+
+Profile
+
+↓
+
+KYC
+
+↓
+
+PAN
+
+↓
+
+Aadhaar
+
+↓
+
+OCR
+
+↓
+
+Face Verification
+
+↓
+
+Employment
+
+↓
+
+Income
+
+↓
+
+Loan Requirement
+
+↓
+
+AI Risk Score
+
+↓
+
+Offer Engine
+
+↓
+
+Compare NBFC Offers
+
+↓
+
+Select Offer
+
+↓
+
+eSign
+
+↓
+
+Disbursement
+
+↓
+
+Dashboard
+
+↓
+
+Repayment
+
+↓
+
+Insurance Recommendation
+
+↓
+
+Credit Card Recommendation
+
+--------------------------------------------------------
+
+ADMIN DASHBOARD
+
+Statistics
+
+Revenue
+
+Customers
+
+Loan Volume
+
+Approvals
+
+Defaults
+
+Collections
+
+Conversion
+
+CAC
+
+LTV
+
+Charts
+
+Heatmaps
+
+Recent Activity
+
+--------------------------------------------------------
+
+TENANT DASHBOARD
+
+Applications
+
+Loans
+
+Revenue
+
+Collections
+
+Customers
+
+Products
+
+Reports
+
+Settings
+
+Integrations
+
+--------------------------------------------------------
+
+SUPER ADMIN
+
+Manage Tenants
+
+Approve Tenants
+
+Billing
+
+Subscriptions
+
+API Keys
+
+Audit
+
+Support
+
+Analytics
+
+Platform Health
+
+--------------------------------------------------------
+
+LOAN PRODUCTS
+
+Personal
+
+Business
+
+MSME
+
+Education
+
+Medical
+
+Home
+
+Gold
+
+Vehicle
+
+Salary Advance
+
+BNPL
+
+Credit Line
+
+--------------------------------------------------------
+
+AI MODULES
+
+AI Chat Assistant
+
+AI Credit Score Prediction
+
+AI Underwriting
+
+AI Fraud Detection
+
+AI Income Prediction
+
+AI Bank Statement Analysis
+
+AI OCR
+
+AI Collection Prioritization
+
+AI Risk Explanation
+
+AI Recommendations
+
+--------------------------------------------------------
+
+FRAUD DETECTION
+
+Duplicate PAN
+
+Duplicate Aadhaar
+
+Device Fingerprint
+
+GPS Risk
+
+IP Risk
+
+Behavior Analysis
+
+Multiple Applications
+
+Fake Documents
+
+Deepfake Detection
+
+Disposable Emails
+
+Temporary Numbers
+
+--------------------------------------------------------
+
+ANALYTICS
+
+Loan Volume
+
+Default Rate
+
+Revenue
+
+Collection Rate
+
+Customer Acquisition
+
+Channel Performance
+
+Branch Performance
+
+Risk Distribution
+
+Approval Funnel
+
+--------------------------------------------------------
+
+MARKETPLACE
+
+Customer should receive offers from
+
+NBFC A
+
+NBFC B
+
+NBFC C
+
+Bank A
+
+Bank B
+
+Sort by
+
+Lowest EMI
+
+Highest Approval
+
+Lowest Interest
+
+Fastest Disbursement
+
+--------------------------------------------------------
+
+WHITE LABEL
+
+Every tenant should have
+
+Own Domain
+
+Own Theme
+
+Own Logo
+
+Own Colors
+
+Own Email Templates
+
+Own SMS Templates
+
+Own WhatsApp Templates
+
+--------------------------------------------------------
+
+WORKFLOW BUILDER
+
+Drag and Drop
+
+Loan Workflow
+
+KYC Workflow
+
+Approval Workflow
+
+Collection Workflow
+
+Notification Workflow
+
+--------------------------------------------------------
+
+INTEGRATIONS
+
+Digilocker
+
+CKYC
+
+Credit Bureau
+
+Razorpay
+
+Cashfree
+
+WhatsApp
+
+SMS
+
+Email
+
+OCR
+
+Face Verification
+
+Google Analytics
+
+--------------------------------------------------------
+
+DATABASE
+
+Generate complete Prisma schema.
+
+Include every relationship.
+
+Generate migrations.
+
+Generate indexes.
+
+--------------------------------------------------------
+
+API
+
+Generate REST APIs.
+
+Swagger Documentation.
+
+OpenAPI.
+
+Versioning.
+
+--------------------------------------------------------
+
+SECURITY
+
+Encryption
+
+JWT
+
+Rate Limiting
+
+CSRF
+
+XSS
+
+SQL Injection Protection
+
+Audit Logs
+
+Role Permissions
+
+--------------------------------------------------------
+
+UI
+
+Enterprise Quality
+
+Responsive
+
+Accessible
+
+Animations
+
+Modern
+
+Apple + Stripe + Linear Inspired
+
+--------------------------------------------------------
+
+CODE QUALITY
+
+Use TypeScript everywhere.
+
+No placeholder code.
+
+No TODOs.
+
+No fake implementations.
+
+Generate production-ready reusable components.
+
+Generate reusable hooks.
+
+Generate services.
+
+Generate validation.
+
+Generate tests.
+
+--------------------------------------------------------
+
+DELIVERABLES
+
+Generate the complete project.
+
+Generate folder structure.
+
+Generate database.
+
+Generate API.
+
+Generate UI.
+
+Generate dashboards.
+
+Generate authentication.
+
+Generate sample data.
+
+Generate Docker.
+
+Generate README.
+
+Generate deployment guide.
+
+Generate API documentation.
+
+Generate ER diagram.
+
+Generate architecture diagram.
+
+Generate seed data.
+
+Generate environment variables.
+
+Generate complete working prototype.
+
+Build incrementally until every module is complete.
