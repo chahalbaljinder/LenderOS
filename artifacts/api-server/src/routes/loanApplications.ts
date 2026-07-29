@@ -78,7 +78,14 @@ router.post("/loan-applications", requireAuth, async (req, res): Promise<void> =
 
   const [app] = await db
     .insert(loanApplicationsTable)
-    .values({ id, applicationNumber, tenantId, ...body.data, status: "draft" })
+    .values({
+      id,
+      applicationNumber,
+      tenantId,
+      ...body.data,
+      requestedAmount: String(body.data.requestedAmount),
+      status: "draft",
+    })
     .returning();
 
   // create KYC record

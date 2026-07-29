@@ -148,13 +148,13 @@ router.post("/kyc/:applicationId/employment", requireAuth, async (req, res): Pro
   const employmentStatus = "verified";
   const [updated] = await db.update(kycRecordsTable)
     .set({ employmentStatus, updatedAt: new Date() })
-    .where(eq(kycRecordsTable.applicationId, req.params.applicationId))
+    .where(eq(kycRecordsTable.applicationId, String(req.params.applicationId)))
     .returning();
   if (!updated) { res.status(404).json({ error: "KYC record not found" }); return; }
 
   // Update customer income
   const appRows = await db.select().from(loanApplicationsTable)
-    .where(eq(loanApplicationsTable.id, req.params.applicationId)).limit(1);
+    .where(eq(loanApplicationsTable.id, String(req.params.applicationId))).limit(1);
   if (appRows.length > 0) {
     await db.update(customersTable)
       .set({ monthlyIncome: String(body.data.monthlyIncome), employmentType: body.data.employmentType as any })
@@ -165,10 +165,10 @@ router.post("/kyc/:applicationId/employment", requireAuth, async (req, res): Pro
   if (overall === "verified") {
     await db.update(loanApplicationsTable)
       .set({ status: "kyc_verified", updatedAt: new Date() })
-      .where(eq(loanApplicationsTable.id, req.params.applicationId));
+      .where(eq(loanApplicationsTable.id, String(req.params.applicationId)));
     await db.update(kycRecordsTable)
       .set({ verifiedAt: new Date() })
-      .where(eq(kycRecordsTable.applicationId, req.params.applicationId));
+      .where(eq(kycRecordsTable.applicationId, String(req.params.applicationId)));
   }
 
   res.json({
