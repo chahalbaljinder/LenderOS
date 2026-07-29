@@ -83,15 +83,18 @@ router.get("/tenants/:tenantId", requireAuth, async (req, res): Promise<void> =>
 });
 
 router.patch("/tenants/:tenantId", requireAuth, async (req, res): Promise<void> => {
-  const { tenantId } = req.params;
+  const tenantId = String(req.params.tenantId);
   const body = UpdateTenantBody.safeParse(req.body);
   if (!body.success) {
     res.status(400).json({ error: body.error.message });
     return;
   }
+  const updateData: any = { ...body.data, updatedAt: new Date() };
+  if (body.data.status) updateData.status = body.data.status;
+
   const [updated] = await db
     .update(tenantsTable)
-    .set({ ...body.data, updatedAt: new Date() })
+    .set(updateData)
     .where(eq(tenantsTable.id, tenantId))
     .returning();
   if (!updated) {
@@ -102,15 +105,17 @@ router.patch("/tenants/:tenantId", requireAuth, async (req, res): Promise<void> 
 });
 
 router.delete("/tenants/:tenantId", requireAuth, async (req, res): Promise<void> => {
-  await db.delete(tenantsTable).where(eq(tenantsTable.id, req.params.tenantId));
+  const tenantId = String(req.params.tenantId);
+  await db.delete(tenantsTable).where(eq(tenantsTable.id, tenantId));
   res.status(204).end();
 });
 
 router.post("/tenants/:tenantId/approve", requireAuth, async (req, res): Promise<void> => {
+  const tenantId = String(req.params.tenantId);
   const [updated] = await db
     .update(tenantsTable)
     .set({ status: "active", updatedAt: new Date() })
-    .where(eq(tenantsTable.id, req.params.tenantId))
+    .where(eq(tenantsTable.id, tenantId))
     .returning();
   if (!updated) {
     res.status(404).json({ error: "Tenant not found" });
@@ -120,7 +125,7 @@ router.post("/tenants/:tenantId/approve", requireAuth, async (req, res): Promise
 });
 
 router.get("/tenants/:tenantId/stats", requireAuth, async (req, res): Promise<void> => {
-  const { tenantId } = req.params;
+  const tenantId = String(req.params.tenantId);
 
   const [appStats, loanStats, customerStats] = await Promise.all([
     db

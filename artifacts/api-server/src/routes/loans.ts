@@ -44,8 +44,9 @@ router.get("/loans", requireAuth, async (req, res): Promise<void> => {
 });
 
 router.get("/loans/:loanId", requireAuth, async (req, res): Promise<void> => {
+  const loanId = String(req.params.loanId);
   const rows = await db.select().from(loansTable)
-    .where(eq(loansTable.id, req.params.loanId)).limit(1);
+    .where(eq(loansTable.id, loanId)).limit(1);
   if (!rows.length) { res.status(404).json({ error: "Loan not found" }); return; }
   const loan = rows[0];
 
@@ -67,12 +68,13 @@ router.get("/loans/:loanId", requireAuth, async (req, res): Promise<void> => {
 });
 
 router.get("/loans/:loanId/schedule", requireAuth, async (req, res): Promise<void> => {
+  const loanId = String(req.params.loanId);
   const rows = await db.select().from(repaymentsTable)
-    .where(eq(repaymentsTable.loanId, req.params.loanId))
+    .where(eq(repaymentsTable.loanId, loanId))
     .orderBy(repaymentsTable.installmentNumber);
 
   const loanRows = await db.select().from(loansTable)
-    .where(eq(loansTable.id, req.params.loanId)).limit(1);
+    .where(eq(loansTable.id, loanId)).limit(1);
   if (!loanRows.length) { res.status(404).json({ error: "Loan not found" }); return; }
   const loan = loanRows[0];
 

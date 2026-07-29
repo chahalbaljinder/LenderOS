@@ -84,8 +84,9 @@ function computeRiskScore(customer: any, app: any): {
 }
 
 router.get("/risk/:applicationId/score", requireAuth, async (req, res): Promise<void> => {
+  const applicationId = String(req.params.applicationId);
   const rows = await db.select().from(riskScoresTable)
-    .where(eq(riskScoresTable.applicationId, req.params.applicationId)).limit(1);
+    .where(eq(riskScoresTable.applicationId, applicationId)).limit(1);
   if (!rows.length) {
     res.status(404).json({ error: "Risk score not computed yet. POST to /analyze first." });
     return;
@@ -106,9 +107,10 @@ router.get("/risk/:applicationId/score", requireAuth, async (req, res): Promise<
   });
 });
 
-router.post("/risk/:applicationId/analyze", requireAuth, async (req, res): Promise<void> => {
+router.post("/risk/evaluate/:applicationId", requireAuth, async (req, res): Promise<void> => {
+  const applicationId = String(req.params.applicationId);
   const appRows = await db.select().from(loanApplicationsTable)
-    .where(eq(loanApplicationsTable.id, req.params.applicationId)).limit(1);
+    .where(eq(loanApplicationsTable.id, applicationId)).limit(1);
   if (!appRows.length) { res.status(404).json({ error: "Application not found" }); return; }
   const app = appRows[0];
 
@@ -120,11 +122,11 @@ router.post("/risk/:applicationId/analyze", requireAuth, async (req, res): Promi
 
   // Upsert risk score
   await db.delete(riskScoresTable)
-    .where(eq(riskScoresTable.applicationId, req.params.applicationId));
+    .where(eq(riskScoresTable.applicationId, applicationId));
 
   const [saved] = await db.insert(riskScoresTable).values({
     id: genId(),
-    applicationId: req.params.applicationId,
+    applicationId,
     score: String(result.score),
     grade: result.grade,
     recommendation: result.recommendation,
@@ -137,6 +139,7 @@ router.post("/risk/:applicationId/analyze", requireAuth, async (req, res): Promi
   }).returning();
 
   // Update application with risk score
+  const appId = String(req.params.applicationId);
   await db.update(loanApplicationsTable)
     .set({
       riskScore: String(result.score),
@@ -144,7 +147,7 @@ router.post("/risk/:applicationId/analyze", requireAuth, async (req, res): Promi
       status: "offer_generated",
       updatedAt: new Date(),
     })
-    .where(eq(loanApplicationsTable.id, req.params.applicationId));
+    .where(eq(loanApplicationsTable.id, appId));
 
   res.json({
     applicationId: req.params.applicationId,

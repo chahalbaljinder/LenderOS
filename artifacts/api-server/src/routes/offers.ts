@@ -14,14 +14,15 @@ import { genId, calcEmi } from "../lib/idgen";
 const router = Router();
 
 router.get("/offers/:applicationId", requireAuth, async (req, res): Promise<void> => {
+  const applicationId = String(req.params.applicationId);
   const appRows = await db.select().from(loanApplicationsTable)
-    .where(eq(loanApplicationsTable.id, req.params.applicationId)).limit(1);
+    .where(eq(loanApplicationsTable.id, applicationId)).limit(1);
   if (!appRows.length) { res.status(404).json({ error: "Application not found" }); return; }
   const app = appRows[0];
 
   // Get existing offers or generate them
   const existing = await db.select().from(loanOffersTable)
-    .where(eq(loanOffersTable.applicationId, req.params.applicationId));
+    .where(eq(loanOffersTable.applicationId, applicationId));
 
   if (existing.length > 0) {
     const tenants = await db.select({ id: tenantsTable.id, name: tenantsTable.name, logo: tenantsTable.logo })
@@ -54,7 +55,7 @@ router.get("/offers/:applicationId", requireAuth, async (req, res): Promise<void
     .where(eq(tenantsTable.status, "active")).limit(5);
 
   const riskRows = await db.select().from(riskScoresTable)
-    .where(eq(riskScoresTable.applicationId, req.params.applicationId)).limit(1);
+    .where(eq(riskScoresTable.applicationId, applicationId)).limit(1);
   const riskScore = riskRows.length > 0 ? Number(riskRows[0].score) : 65;
 
   const principal = Number(app.approvedAmount ?? app.requestedAmount);
@@ -72,7 +73,7 @@ router.get("/offers/:applicationId", requireAuth, async (req, res): Promise<void
 
     return {
       id: genId(),
-      applicationId: req.params.applicationId,
+      applicationId,
       tenantId: tenant.id,
       offeredAmount: String(principal),
       tenure,
@@ -113,13 +114,14 @@ router.get("/offers/:applicationId", requireAuth, async (req, res): Promise<void
 });
 
 router.post("/offers/:applicationId/accept", requireAuth, async (req, res): Promise<void> => {
+  const applicationId = String(req.params.applicationId);
   const body = AcceptOfferBody.safeParse(req.body);
   if (!body.success) { res.status(400).json({ error: body.error.message }); return; }
 
   const offerRows = await db.select().from(loanOffersTable)
     .where(and(
       eq(loanOffersTable.id, body.data.offerId),
-      eq(loanOffersTable.applicationId, req.params.applicationId),
+      eq(loanOffersTable.applicationId, applicationId),
     )).limit(1);
   if (!offerRows.length) { res.status(404).json({ error: "Offer not found" }); return; }
   const offer = offerRows[0];
@@ -136,7 +138,7 @@ router.post("/offers/:applicationId/accept", requireAuth, async (req, res): Prom
       approvedRate: offer.interestRate,
       updatedAt: new Date(),
     })
-    .where(eq(loanApplicationsTable.id, req.params.applicationId))
+    .where(eq(loanApplicationsTable.id, applicationId))
     .returning();
 
   res.json(updated);

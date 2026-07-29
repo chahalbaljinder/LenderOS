@@ -14,13 +14,14 @@ const router = Router();
 
 // ── Tenant Settings ──────────────────────────────────────────────────────────
 router.get("/settings/tenant/:tenantId", requireAuth, async (req, res): Promise<void> => {
+  const tenantId = String(req.params.tenantId);
   const rows = await db.select().from(tenantSettingsTable)
-    .where(eq(tenantSettingsTable.tenantId, req.params.tenantId)).limit(1);
+    .where(eq(tenantSettingsTable.tenantId, tenantId)).limit(1);
 
   if (!rows.length) {
     // Return defaults
     res.json({
-      tenantId: req.params.tenantId,
+      tenantId,
       primaryColor: null, secondaryColor: null, logo: null, favicon: null,
       domain: null, emailFromName: null, emailFromAddress: null, smsProvider: null,
       whatsappEnabled: false, autoApprovalEnabled: false, maxLoanAmount: null, minCreditScore: null,
@@ -35,22 +36,29 @@ router.get("/settings/tenant/:tenantId", requireAuth, async (req, res): Promise<
 });
 
 router.put("/settings/tenant/:tenantId", requireAuth, async (req, res): Promise<void> => {
+  const tenantId = String(req.params.tenantId);
   const body = UpdateTenantSettingsBody.safeParse(req.body);
   if (!body.success) { res.status(400).json({ error: body.error.message }); return; }
 
   const existing = await db.select().from(tenantSettingsTable)
-    .where(eq(tenantSettingsTable.tenantId, req.params.tenantId)).limit(1);
+    .where(eq(tenantSettingsTable.tenantId, tenantId)).limit(1);
+
+  const setData: any = { ...body.data, updatedAt: new Date() };
+  if (body.data.maxLoanAmount !== undefined) {
+    setData.maxLoanAmount = body.data.maxLoanAmount !== null ? String(body.data.maxLoanAmount) : null;
+  }
 
   let updated: any;
   if (existing.length > 0) {
     const result = await db.update(tenantSettingsTable)
-      .set({ ...body.data, updatedAt: new Date() })
-      .where(eq(tenantSettingsTable.tenantId, req.params.tenantId))
+      .set(setData)
+      .where(eq(tenantSettingsTable.tenantId, tenantId))
       .returning();
     updated = result[0];
   } else {
+    const insertData: any = { tenantId, ...setData };
     const result = await db.insert(tenantSettingsTable)
-      .values({ tenantId: req.params.tenantId, ...body.data })
+      .values(insertData)
       .returning();
     updated = result[0];
   }
@@ -145,8 +153,9 @@ router.post("/settings/api-keys", requireAuth, async (req, res): Promise<void> =
 });
 
 router.delete("/settings/api-keys/:keyId", requireAuth, async (req, res): Promise<void> => {
+  const keyId = String(req.params.keyId);
   await db.update(apiKeysTable).set({ isActive: "false" })
-    .where(eq(apiKeysTable.id, req.params.keyId));
+    .where(eq(apiKeysTable.id, keyId));
   res.status(204).end();
 });
 

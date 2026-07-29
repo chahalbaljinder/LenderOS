@@ -88,8 +88,9 @@ router.post("/loan-applications", requireAuth, async (req, res): Promise<void> =
 });
 
 router.get("/loan-applications/:applicationId", requireAuth, async (req, res): Promise<void> => {
+  const applicationId = String(req.params.applicationId);
   const rows = await db.select().from(loanApplicationsTable)
-    .where(eq(loanApplicationsTable.id, req.params.applicationId)).limit(1);
+    .where(eq(loanApplicationsTable.id, applicationId)).limit(1);
   if (!rows.length) {
     res.status(404).json({ error: "Application not found" });
     return;
@@ -98,29 +99,35 @@ router.get("/loan-applications/:applicationId", requireAuth, async (req, res): P
 });
 
 router.patch("/loan-applications/:applicationId", requireAuth, async (req, res): Promise<void> => {
+  const applicationId = String(req.params.applicationId);
   const body = UpdateLoanApplicationBody.safeParse(req.body);
   if (!body.success) {
     res.status(400).json({ error: body.error.message });
     return;
   }
+  const updateData: any = { ...body.data, updatedAt: new Date() };
+  if (body.data.requestedAmount) updateData.requestedAmount = String(body.data.requestedAmount);
+
   const [updated] = await db.update(loanApplicationsTable)
-    .set({ ...body.data, updatedAt: new Date() })
-    .where(eq(loanApplicationsTable.id, req.params.applicationId))
+    .set(updateData)
+    .where(eq(loanApplicationsTable.id, applicationId))
     .returning();
   if (!updated) { res.status(404).json({ error: "Not found" }); return; }
   res.json(await enrichApp(updated));
 });
 
 router.post("/loan-applications/:applicationId/submit", requireAuth, async (req, res): Promise<void> => {
+  const applicationId = String(req.params.applicationId);
   const [updated] = await db.update(loanApplicationsTable)
     .set({ status: "submitted", updatedAt: new Date() })
-    .where(eq(loanApplicationsTable.id, req.params.applicationId))
+    .where(eq(loanApplicationsTable.id, applicationId))
     .returning();
   if (!updated) { res.status(404).json({ error: "Not found" }); return; }
   res.json(await enrichApp(updated));
 });
 
 router.post("/loan-applications/:applicationId/approve", requireAuth, async (req, res): Promise<void> => {
+  const applicationId = String(req.params.applicationId);
   const body = ApproveLoanApplicationBody.safeParse(req.body);
   if (!body.success) { res.status(400).json({ error: body.error.message }); return; }
   const [updated] = await db.update(loanApplicationsTable)
@@ -131,29 +138,31 @@ router.post("/loan-applications/:applicationId/approve", requireAuth, async (req
       approvedRate: String(body.data.approvedRate),
       updatedAt: new Date(),
     })
-    .where(eq(loanApplicationsTable.id, req.params.applicationId))
+    .where(eq(loanApplicationsTable.id, applicationId))
     .returning();
   if (!updated) { res.status(404).json({ error: "Not found" }); return; }
   res.json(await enrichApp(updated));
 });
 
 router.post("/loan-applications/:applicationId/reject", requireAuth, async (req, res): Promise<void> => {
+  const applicationId = String(req.params.applicationId);
   const body = RejectLoanApplicationBody.safeParse(req.body);
   if (!body.success) { res.status(400).json({ error: body.error.message }); return; }
   const [updated] = await db.update(loanApplicationsTable)
     .set({ status: "rejected", rejectionReason: body.data.reason, updatedAt: new Date() })
-    .where(eq(loanApplicationsTable.id, req.params.applicationId))
+    .where(eq(loanApplicationsTable.id, applicationId))
     .returning();
   if (!updated) { res.status(404).json({ error: "Not found" }); return; }
   res.json(await enrichApp(updated));
 });
 
 router.post("/loan-applications/:applicationId/disburse", requireAuth, async (req, res): Promise<void> => {
+  const applicationId = String(req.params.applicationId);
   const body = DisburseLoanBody.safeParse(req.body);
   if (!body.success) { res.status(400).json({ error: body.error.message }); return; }
 
   const appRows = await db.select().from(loanApplicationsTable)
-    .where(eq(loanApplicationsTable.id, req.params.applicationId)).limit(1);
+    .where(eq(loanApplicationsTable.id, applicationId)).limit(1);
   if (!appRows.length) { res.status(404).json({ error: "Not found" }); return; }
   const app = appRows[0];
 

@@ -40,14 +40,26 @@ app.use(cors({ credentials: true, origin: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use(
-  clerkMiddleware((req) => ({
-    publishableKey: publishableKeyFromHost(
-      getClerkProxyHost(req) ?? "",
-      process.env.CLERK_PUBLISHABLE_KEY,
-    ),
-  })),
-);
+const rawClerkKey = process.env.CLERK_PUBLISHABLE_KEY;
+const isClerkKeyValid =
+  rawClerkKey &&
+  rawClerkKey !== "pk_test_your_key_here" &&
+  !rawClerkKey.includes("your_key_here") &&
+  rawClerkKey.startsWith("pk_");
+
+if (isClerkKeyValid) {
+  app.use(
+    clerkMiddleware((req) => ({
+      publishableKey: publishableKeyFromHost(
+        getClerkProxyHost(req) ?? "",
+        rawClerkKey,
+      ),
+    })),
+  );
+} else {
+  logger.warn("CLERK_PUBLISHABLE_KEY missing or placeholder; running API in local mode");
+}
+
 
 app.use("/api", router);
 

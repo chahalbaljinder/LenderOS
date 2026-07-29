@@ -130,10 +130,11 @@ router.post("/users", requireAuth, async (req, res): Promise<void> => {
 });
 
 router.get("/users/:userId", requireAuth, async (req, res): Promise<void> => {
+  const userId = String(req.params.userId);
   const rows = await db
     .select()
     .from(usersTable)
-    .where(eq(usersTable.id, req.params.userId))
+    .where(eq(usersTable.id, userId))
     .limit(1);
   if (!rows.length) {
     res.status(404).json({ error: "User not found" });
@@ -143,15 +144,19 @@ router.get("/users/:userId", requireAuth, async (req, res): Promise<void> => {
 });
 
 router.patch("/users/:userId", requireAuth, async (req, res): Promise<void> => {
+  const userId = String(req.params.userId);
   const body = UpdateUserBody.safeParse(req.body);
   if (!body.success) {
     res.status(400).json({ error: body.error.message });
     return;
   }
+  const updateData: any = { ...body.data, updatedAt: new Date() };
+  if (body.data.role) updateData.role = body.data.role;
+
   const [updated] = await db
     .update(usersTable)
-    .set({ ...body.data, updatedAt: new Date() })
-    .where(eq(usersTable.id, req.params.userId))
+    .set(updateData)
+    .where(eq(usersTable.id, userId))
     .returning();
   if (!updated) {
     res.status(404).json({ error: "User not found" });

@@ -41,11 +41,12 @@ router.get("/repayments", requireAuth, async (req, res): Promise<void> => {
 });
 
 router.post("/repayments/:repaymentId/record", requireAuth, async (req, res): Promise<void> => {
+  const repaymentId = String(req.params.repaymentId);
   const body = RecordRepaymentBody.safeParse(req.body);
   if (!body.success) { res.status(400).json({ error: body.error.message }); return; }
 
   const rows = await db.select().from(repaymentsTable)
-    .where(eq(repaymentsTable.id, req.params.repaymentId)).limit(1);
+    .where(eq(repaymentsTable.id, repaymentId)).limit(1);
   if (!rows.length) { res.status(404).json({ error: "Repayment not found" }); return; }
   const repayment = rows[0];
 
@@ -64,7 +65,7 @@ router.post("/repayments/:repaymentId/record", requireAuth, async (req, res): Pr
       dpd: 0,
       updatedAt: new Date(),
     })
-    .where(eq(repaymentsTable.id, req.params.repaymentId))
+    .where(eq(repaymentsTable.id, repaymentId))
     .returning();
 
   // Update loan outstanding

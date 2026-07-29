@@ -50,17 +50,22 @@ router.post("/loan-products", requireAuth, async (req, res): Promise<void> => {
       id,
       tenantId,
       ...body.data,
+      minAmount: String(body.data.minAmount),
+      maxAmount: String(body.data.maxAmount),
+      interestRate: String(body.data.interestRate),
+      processingFeePercent: String(body.data.processingFeePercent),
       requiredDocuments: body.data.requiredDocuments?.join(","),
-    })
+    } as any)
     .returning();
   res.status(201).json(product);
 });
 
 router.get("/loan-products/:productId", requireAuth, async (req, res): Promise<void> => {
+  const productId = String(req.params.productId);
   const rows = await db
     .select()
     .from(loanProductsTable)
-    .where(eq(loanProductsTable.id, req.params.productId))
+    .where(eq(loanProductsTable.id, productId))
     .limit(1);
   if (!rows.length) {
     res.status(404).json({ error: "Loan product not found" });
@@ -70,15 +75,22 @@ router.get("/loan-products/:productId", requireAuth, async (req, res): Promise<v
 });
 
 router.patch("/loan-products/:productId", requireAuth, async (req, res): Promise<void> => {
+  const productId = String(req.params.productId);
   const body = UpdateLoanProductBody.safeParse(req.body);
   if (!body.success) {
     res.status(400).json({ error: body.error.message });
     return;
   }
+  const updateData: any = { ...body.data, updatedAt: new Date() };
+  if (body.data.minAmount) updateData.minAmount = String(body.data.minAmount);
+  if (body.data.maxAmount) updateData.maxAmount = String(body.data.maxAmount);
+  if (body.data.interestRate) updateData.interestRate = String(body.data.interestRate);
+  if (body.data.processingFeePercent) updateData.processingFeePercent = String(body.data.processingFeePercent);
+
   const [updated] = await db
     .update(loanProductsTable)
-    .set({ ...body.data, updatedAt: new Date() })
-    .where(eq(loanProductsTable.id, req.params.productId))
+    .set(updateData)
+    .where(eq(loanProductsTable.id, productId))
     .returning();
   if (!updated) {
     res.status(404).json({ error: "Product not found" });
