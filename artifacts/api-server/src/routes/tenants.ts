@@ -19,6 +19,15 @@ import { genId } from "../lib/idgen";
 
 const router = Router();
 
+function ensureAdmin(req: any, res: any): boolean {
+  const userRole = req.userRole ?? req.role;
+  if (userRole === "super_admin" || userRole === "platform_admin") {
+    return true;
+  }
+  res.status(403).json({ error: "Forbidden", message: "Super admin access required" });
+  return false;
+}
+
 router.get("/tenants", requireAuth, async (req, res): Promise<void> => {
   const query = ListTenantsQueryParams.safeParse(req.query);
   if (!query.success) {
@@ -49,6 +58,8 @@ router.get("/tenants", requireAuth, async (req, res): Promise<void> => {
 });
 
 router.post("/tenants", requireAuth, async (req, res): Promise<void> => {
+  if (!ensureAdmin(req, res)) return;
+
   const body = CreateTenantBody.safeParse(req.body);
   if (!body.success) {
     res.status(400).json({ error: body.error.message });
@@ -83,6 +94,8 @@ router.get("/tenants/:tenantId", requireAuth, async (req, res): Promise<void> =>
 });
 
 router.patch("/tenants/:tenantId", requireAuth, async (req, res): Promise<void> => {
+  if (!ensureAdmin(req, res)) return;
+
   const tenantId = String(req.params.tenantId);
   const body = UpdateTenantBody.safeParse(req.body);
   if (!body.success) {
@@ -105,12 +118,16 @@ router.patch("/tenants/:tenantId", requireAuth, async (req, res): Promise<void> 
 });
 
 router.delete("/tenants/:tenantId", requireAuth, async (req, res): Promise<void> => {
+  if (!ensureAdmin(req, res)) return;
+
   const tenantId = String(req.params.tenantId);
   await db.delete(tenantsTable).where(eq(tenantsTable.id, tenantId));
   res.status(204).end();
 });
 
 router.post("/tenants/:tenantId/approve", requireAuth, async (req, res): Promise<void> => {
+  if (!ensureAdmin(req, res)) return;
+
   const tenantId = String(req.params.tenantId);
   const [updated] = await db
     .update(tenantsTable)
@@ -125,6 +142,8 @@ router.post("/tenants/:tenantId/approve", requireAuth, async (req, res): Promise
 });
 
 router.get("/tenants/:tenantId/stats", requireAuth, async (req, res): Promise<void> => {
+  if (!ensureAdmin(req, res)) return;
+
   const tenantId = String(req.params.tenantId);
 
   const [appStats, loanStats, customerStats] = await Promise.all([

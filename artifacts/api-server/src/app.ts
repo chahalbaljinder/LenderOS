@@ -1,4 +1,4 @@
-import express, { type Express } from "express";
+import express, { type Express, type NextFunction, type Request, type Response } from "express";
 import cors from "cors";
 import pinoHttp from "pino-http";
 import { clerkMiddleware } from "@clerk/express";
@@ -10,6 +10,7 @@ import {
 } from "./middlewares/clerkProxyMiddleware";
 import router from "./routes";
 import { logger } from "./lib/logger";
+import { getDemoFallbackResponse, shouldUseDemoFallback } from "./lib/demoData";
 
 const app: Express = express();
 
@@ -61,6 +62,45 @@ if (isClerkKeyValid) {
 }
 
 
-app.use("/api", router);
+app.use("/api", async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    await new Promise<void>((resolve, reject) => {
+      router.handle(req, res, (err?: unknown) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve();
+        }
+      });
+    });
+  } catch (error) {
+    if (shouldUseDemoFallback(error)) {
+      const fallback = getDemoFallbackResponse(req);
+      if (fallback) {
+        logger.warn({ req: req.path, error: error instanceof Error ? error.message : String(error) }, "Using demo fallback for API request");
+        res.status(fallback.statusCode).json(fallback.body);
+        return;
+      }
+    }
+
+    logger.error({ err: error, req: req.path }, "Unhandled API request error");
+    if (!res.headersSent) {
+      res.status(500).json({
+        error: "Internal server error",
+        message: error instanceof Error ? error.message : "Unknown error",
+      });
+    }
+  }
+});
+
+app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
+  logger.error({ err }, "Express error middleware caught a failure");
+  if (!res.headersSent) {
+    res.status(500).json({
+      error: "Internal server error",
+      message: err instanceof Error ? err.message : "Unknown error",
+    });
+  }
+});
 
 export default app;

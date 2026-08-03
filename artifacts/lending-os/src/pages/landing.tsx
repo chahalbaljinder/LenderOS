@@ -31,12 +31,12 @@ function Navigation() {
         <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
       </div>
       <div className="flex items-center gap-4">
-        <Link href="/sign-in" className="text-sm font-mono hover:text-white text-zinc-400 transition-colors">
+        <a href="/sign-in" className="text-sm font-mono hover:text-white text-zinc-400 transition-colors">
           Login
-        </Link>
-        <Link href="/sign-up" className="text-sm font-mono bg-primary hover:bg-primary/90 text-black px-4 py-2 flex items-center gap-2 transition-colors">
+        </a>
+        <a href="/sign-up" className="text-sm font-mono bg-primary hover:bg-primary/90 text-black px-4 py-2 flex items-center gap-2 transition-colors">
           Initialize Terminal <ChevronRight className="h-4 w-4" />
-        </Link>
+        </a>
       </div>
     </header>
   );
@@ -86,9 +86,9 @@ function HeroSection() {
           transition={{ duration: 0.5, delay: 0.3 }}
           className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto"
         >
-          <Link href="/sign-up" className="w-full sm:w-auto px-8 py-4 bg-primary text-black font-semibold font-mono flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors">
+          <a href="/sign-up" className="w-full sm:w-auto px-8 py-4 bg-primary text-black font-semibold font-mono flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors">
             Deploy Environment <ArrowRight className="h-4 w-4" />
-          </Link>
+          </a>
           <a href="#features" className="w-full sm:w-auto px-8 py-4 bg-white/5 border border-white/10 text-white font-mono flex items-center justify-center hover:bg-white/10 transition-colors">
             View Architecture
           </a>
@@ -277,7 +277,7 @@ function PricingSection() {
               <li className="flex items-center gap-2"><div className="w-1 h-1 bg-white" /> 2 Admin Seats</li>
               <li className="flex items-center gap-2"><div className="w-1 h-1 bg-white" /> Basic KYC Suite</li>
             </ul>
-            <Link href="/sign-up" className="w-full py-3 bg-white/5 border border-white/10 text-center font-mono text-sm hover:bg-white/10 transition-colors">Select Plan</Link>
+            <a href="/sign-up" className="w-full py-3 bg-white/5 border border-white/10 text-center font-mono text-sm hover:bg-white/10 transition-colors">Select Plan</a>
           </div>
           
           {/* Growth */}
@@ -292,7 +292,7 @@ function PricingSection() {
               <li className="flex items-center gap-2"><div className="w-1 h-1 bg-primary" /> AI Risk Engine Access</li>
               <li className="flex items-center gap-2"><div className="w-1 h-1 bg-primary" /> Custom Approval Workflows</li>
             </ul>
-            <Link href="/sign-up" className="w-full py-3 bg-primary text-black text-center font-mono font-bold text-sm hover:bg-primary/90 transition-colors">Deploy Now</Link>
+            <a href="/sign-up" className="w-full py-3 bg-primary text-black text-center font-mono font-bold text-sm hover:bg-primary/90 transition-colors">Deploy Now</a>
           </div>
 
           {/* Enterprise */}

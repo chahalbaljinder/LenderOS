@@ -40,6 +40,14 @@ export const requireAuth = async (
   }
 
   (req as any).clerkId = clerkId;
+
+  const email = (req.headers["x-demo-user-email"] as string | undefined) ?? undefined;
+  const user = await getOrCreateUser(clerkId, email);
+  if (user) {
+    (req as any).userRole = user.role;
+    (req as any).user = user;
+  }
+
   next();
 };
 

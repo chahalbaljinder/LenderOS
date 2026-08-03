@@ -13,6 +13,15 @@ import { getAuth } from "@clerk/express";
 
 const router = Router();
 
+function ensureAdmin(req: any, res: any): boolean {
+  const userRole = req.userRole ?? req.role;
+  if (userRole === "super_admin" || userRole === "platform_admin") {
+    return true;
+  }
+  res.status(403).json({ error: "Forbidden", message: "Super admin access required" });
+  return false;
+}
+
 router.get("/users/me", requireAuth, async (req, res): Promise<void> => {
   const clerkId = (req as any).clerkId;
   // Only call getAuth() when clerkMiddleware is mounted; otherwise it throws.
@@ -74,6 +83,8 @@ router.put("/users/me", requireAuth, async (req, res): Promise<void> => {
 });
 
 router.get("/users", requireAuth, async (req, res): Promise<void> => {
+  if (!ensureAdmin(req, res)) return;
+
   const query = ListUsersQueryParams.safeParse(req.query);
   if (!query.success) {
     res.status(400).json({ error: query.error.message });
@@ -118,6 +129,8 @@ router.get("/users", requireAuth, async (req, res): Promise<void> => {
 });
 
 router.post("/users", requireAuth, async (req, res): Promise<void> => {
+  if (!ensureAdmin(req, res)) return;
+
   const body = CreateUserBody.safeParse(req.body);
   if (!body.success) {
     res.status(400).json({ error: body.error.message });
@@ -132,6 +145,8 @@ router.post("/users", requireAuth, async (req, res): Promise<void> => {
 });
 
 router.get("/users/:userId", requireAuth, async (req, res): Promise<void> => {
+  if (!ensureAdmin(req, res)) return;
+
   const userId = String(req.params.userId);
   const rows = await db
     .select()
@@ -146,6 +161,8 @@ router.get("/users/:userId", requireAuth, async (req, res): Promise<void> => {
 });
 
 router.patch("/users/:userId", requireAuth, async (req, res): Promise<void> => {
+  if (!ensureAdmin(req, res)) return;
+
   const userId = String(req.params.userId);
   const body = UpdateUserBody.safeParse(req.body);
   if (!body.success) {

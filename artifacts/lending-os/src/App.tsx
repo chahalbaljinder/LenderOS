@@ -2,7 +2,7 @@ import { useEffect, useRef, Component, type ReactNode } from "react";
 import { ClerkProvider, SignIn, SignUp, useClerk } from "@clerk/react";
 import { publishableKeyFromHost } from "@clerk/react/internal";
 import { shadcn } from "@clerk/themes";
-import { Switch, Route, useLocation, Router as WouterRouter, Redirect, Link } from "wouter";
+import { Switch, Route, useLocation, Router as WouterRouter, Link, useParams } from "wouter";
 import { QueryClient, QueryClientProvider, useQueryClient } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -20,6 +20,7 @@ import LoansList from "@/pages/loans/list";
 import CollectionsList from "@/pages/collections/list";
 import CustomerApply from "@/pages/apply";
 import NotFound from "@/pages/not-found";
+import PlaceholderPage from "@/pages/placeholder";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -216,8 +217,21 @@ function ClerkSetupScreen() {
 }
 
 function SignInPage() {
-  // In demo mode skip the setup screen entirely — go straight to dashboard.
-  if (!clerkPubKey) return <Redirect to="/dashboard" />;
+  if (!clerkPubKey) {
+    return (
+      <div className="flex min-h-[100dvh] items-center justify-center bg-black px-4 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-zinc-900 via-black to-black">
+        <div className="w-[420px] max-w-full rounded-lg border border-white/10 bg-[#09090b] p-8 text-center text-white">
+          <h1 className="text-xl font-semibold">Demo sign-in is not active</h1>
+          <p className="mt-3 text-sm text-zinc-400">Use the landing page buttons to continue in demo mode or open the dashboard directly.</p>
+          <div className="mt-6 flex flex-col gap-3">
+            <a href="/" className="rounded bg-[#00cc88] px-4 py-2 font-mono text-sm font-semibold text-black">Back to Home</a>
+            <a href="/dashboard" className="rounded border border-white/10 px-4 py-2 font-mono text-sm text-zinc-300">Open Dashboard</a>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-[100dvh] items-center justify-center bg-black px-4 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-zinc-900 via-black to-black">
       <SignIn routing="path" path={`${basePath}/sign-in`} signUpUrl={`${basePath}/sign-up`} />
@@ -226,8 +240,21 @@ function SignInPage() {
 }
 
 function SignUpPage() {
-  // In demo mode skip the setup screen entirely — go straight to dashboard.
-  if (!clerkPubKey) return <Redirect to="/dashboard" />;
+  if (!clerkPubKey) {
+    return (
+      <div className="flex min-h-[100dvh] items-center justify-center bg-black px-4 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-zinc-900 via-black to-black">
+        <div className="w-[420px] max-w-full rounded-lg border border-white/10 bg-[#09090b] p-8 text-center text-white">
+          <h1 className="text-xl font-semibold">Demo sign-up is not active</h1>
+          <p className="mt-3 text-sm text-zinc-400">Use the landing page buttons to continue in demo mode or open the dashboard directly.</p>
+          <div className="mt-6 flex flex-col gap-3">
+            <a href="/" className="rounded bg-[#00cc88] px-4 py-2 font-mono text-sm font-semibold text-black">Back to Home</a>
+            <a href="/dashboard" className="rounded border border-white/10 px-4 py-2 font-mono text-sm text-zinc-300">Open Dashboard</a>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-[100dvh] items-center justify-center bg-black px-4 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-zinc-900 via-black to-black">
       <SignUp routing="path" path={`${basePath}/sign-up`} signInUrl={`${basePath}/sign-in`} />
@@ -263,38 +290,49 @@ function ClerkQueryClientCacheInvalidatorInternal() {
 }
 
 function AppRedirect() {
-  const { data: user, isLoading } = useGetMe();
-
-  if (isLoading) return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-primary font-mono text-sm uppercase tracking-widest animate-pulse">Initializing Data Stream...</div>
-    </div>
-  );
-
-  if (user?.role === 'super_admin' || user?.role === 'platform_admin') {
-    return <Redirect to="/dashboard" />;
-  }
-
-  if (user?.role === 'customer') {
-    return <Redirect to="/apply" />;
-  }
-
-  return <Redirect to="/dashboard" />;
+  return <LandingPage />;
 }
 
 function HomeRedirect() {
-  // Demo mode: skip landing / sign-in flow, go straight to the dashboard.
-  if (!clerkPubKey) return <Redirect to="/dashboard" />;
-  // Clerk mode: use a simple hook-based check instead of <Show> which
-  // internally calls useClerk() and crashes when mounted outside ClerkProvider.
-  return <ClerkHomeRedirect />;
+  return <LandingPage />;
 }
 
 function ClerkHomeRedirect() {
-  // This component is ONLY rendered inside <ClerkProvider>, so useClerk is safe.
-  const { user } = useClerk();
-  if (user) return <AppRedirect />;
   return <LandingPage />;
+}
+
+function ProductsPage() {
+  return <PlaceholderPage title="Loan Products" description="Manage product catalog and pricing" activeTab="products" badge="Core catalog" />;
+}
+
+function AuditPage() {
+  return <PlaceholderPage title="Audit Logs" description="Track admin actions and compliance events" activeTab="audit" badge="Compliance" />;
+}
+
+function SettingsPage() {
+  return <PlaceholderPage title="Tenant Settings" description="Configure workflow, notifications, and tenant preferences" activeTab="settings" badge="Configuration" />;
+}
+
+function PlatformAnalyticsPage() {
+  return <PlaceholderPage title="Platform Analytics" description="Cross-tenant performance and risk signals" activeTab="analytics" badge="Insights" />;
+}
+
+function NewApplicationPage() {
+  return <PlaceholderPage title="Create Application" description="Capture a new loan application request" activeTab="applications" badge="Create" />;
+}
+
+function ApplicationDetailPage() {
+  const params = useParams<{ applicationId: string }>();
+  return <PlaceholderPage title={`Application ${params.applicationId ?? "Details"}`} description="Review underwriting and customer context" activeTab="applications" badge="Review" />;
+}
+
+function NewTenantPage() {
+  return <PlaceholderPage title="Create Tenant" description="Add a new onboarding tenant to the platform" activeTab="tenants" badge="Onboarding" />;
+}
+
+function TenantDetailPage() {
+  const params = useParams<{ tenantId: string }>();
+  return <PlaceholderPage title={`Tenant ${params.tenantId ?? "Details"}`} description="Inspect tenant status, exposure, and controls" activeTab="tenants" badge="Detail" />;
 }
 
 function DashboardRoute() {
@@ -306,24 +344,42 @@ function DashboardRoute() {
   return <TenantDashboard />;
 }
 
+function AuthRouteRedirect() {
+  const [, setLocation] = useLocation();
+  useEffect(() => {
+    setLocation(window.location.pathname, { replace: true });
+  }, [setLocation]);
+
+  return null;
+}
+
 function AppRoutes() {
   return (
     <QueryClientProvider client={queryClient}>
       {!clerkPubKey && <DemoBanner />}
       <ClerkQueryClientCacheInvalidator />
       <Switch>
-        <Route path="/" component={HomeRedirect} />
         <Route path="/sign-in/*?" component={SignInPage} />
         <Route path="/sign-up/*?" component={SignUpPage} />
         <Route path="/dashboard" component={DashboardRoute} />
+        <Route path="/tenants/new" component={NewTenantPage} />
+        <Route path="/tenants/:tenantId" component={TenantDetailPage} />
         <Route path="/tenants" component={TenantsList} />
+        <Route path="/applications/new" component={NewApplicationPage} />
+        <Route path="/applications/:applicationId" component={ApplicationDetailPage} />
         <Route path="/applications" component={ApplicationsList} />
         <Route path="/customers" component={CustomersList} />
         <Route path="/loans" component={LoansList} />
         <Route path="/collections" component={CollectionsList} />
+        <Route path="/products" component={ProductsPage} />
+        <Route path="/audit" component={AuditPage} />
+        <Route path="/settings" component={SettingsPage} />
+        <Route path="/platform/analytics" component={PlatformAnalyticsPage} />
         <Route path="/apply" component={CustomerApply} />
+        <Route path="/" component={HomeRedirect} />
         <Route component={NotFound} />
       </Switch>
+      <AuthRouteRedirect />
     </QueryClientProvider>
   );
 }
