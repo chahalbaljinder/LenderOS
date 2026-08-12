@@ -12,7 +12,12 @@ import * as zod from 'zod';
  * @summary Health check
  */
 export const HealthCheckResponse = zod.object({
-  "status": zod.string()
+  "status": zod.enum(['ok', 'degraded', 'down']).describe('Overall health status'),
+  "api": zod.enum(['ok', 'degraded', 'down']).describe('API service status'),
+  "database": zod.enum(['ok', 'degraded', 'down']).describe('Database connectivity status'),
+  "uptime": zod.number().describe('Server uptime in seconds'),
+  "timestamp": zod.coerce.date().describe('Health check timestamp (ISO 8601)'),
+  "version": zod.string().optional().describe('API version')
 })
 
 

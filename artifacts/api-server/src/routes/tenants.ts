@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { eq, ilike, and, desc, count, sql } from "drizzle-orm";
+import { eq, and, desc, count, sql } from "drizzle-orm";
 import {
   db,
   tenantsTable,
@@ -15,20 +15,12 @@ import {
   UpdateTenantBody,
 } from "@workspace/api-zod";
 import { requireAuth } from "../lib/auth";
+import { requireSuperAdmin, ensureTenantAccess } from "../middlewares/rbac";
 import { genId } from "../lib/idgen";
 
 const router = Router();
 
-function ensureAdmin(req: any, res: any): boolean {
-  const userRole = req.userRole ?? req.role;
-  if (userRole === "super_admin" || userRole === "platform_admin") {
-    return true;
-  }
-  res.status(403).json({ error: "Forbidden", message: "Super admin access required" });
-  return false;
-}
-
-router.get("/tenants", requireAuth, async (req, res): Promise<void> => {
+router.get("/tenants", requireAuth, requireSuperAdmin(), async (req, res): Promise<void> => {
   const query = ListTenantsQueryParams.safeParse(req.query);
   if (!query.success) {
     res.status(400).json({ error: query.error.message });
@@ -57,9 +49,7 @@ router.get("/tenants", requireAuth, async (req, res): Promise<void> => {
   res.json({ data: rows, total: totalRows[0]?.count ?? 0, page, limit });
 });
 
-router.post("/tenants", requireAuth, async (req, res): Promise<void> => {
-  if (!ensureAdmin(req, res)) return;
-
+router.post("/tenants", requireAuth, requireSuperAdmin(), async (req, res): Promise<void> => {
   const body = CreateTenantBody.safeParse(req.body);
   if (!body.success) {
     res.status(400).json({ error: body.error.message });
@@ -79,7 +69,7 @@ router.post("/tenants", requireAuth, async (req, res): Promise<void> => {
   res.status(201).json(tenant);
 });
 
-router.get("/tenants/:tenantId", requireAuth, async (req, res): Promise<void> => {
+router.get("/tenants/:tenantId", requireAuth, requireSuperAdmin(), ensureTenantAccess, async (req, res): Promise<void> => {
   const { tenantId } = GetTenantParams.parse(req.params);
   const rows = await db
     .select()
@@ -93,9 +83,7 @@ router.get("/tenants/:tenantId", requireAuth, async (req, res): Promise<void> =>
   res.json(rows[0]);
 });
 
-router.patch("/tenants/:tenantId", requireAuth, async (req, res): Promise<void> => {
-  if (!ensureAdmin(req, res)) return;
-
+router.patch("/tenants/:tenantId", requireAuth, requireSuperAdmin(), async (req, res): Promise<void> => {
   const tenantId = String(req.params.tenantId);
   const body = UpdateTenantBody.safeParse(req.body);
   if (!body.success) {
@@ -117,17 +105,13 @@ router.patch("/tenants/:tenantId", requireAuth, async (req, res): Promise<void> 
   res.json(updated);
 });
 
-router.delete("/tenants/:tenantId", requireAuth, async (req, res): Promise<void> => {
-  if (!ensureAdmin(req, res)) return;
-
+router.delete("/tenants/:tenantId", requireAuth, requireSuperAdmin(), async (req, res): Promise<void> => {
   const tenantId = String(req.params.tenantId);
   await db.delete(tenantsTable).where(eq(tenantsTable.id, tenantId));
   res.status(204).end();
 });
 
-router.post("/tenants/:tenantId/approve", requireAuth, async (req, res): Promise<void> => {
-  if (!ensureAdmin(req, res)) return;
-
+router.post("/tenants/:tenantId/approve", requireAuth, requireSuperAdmin(), async (req, res): Promise<void> => {
   const tenantId = String(req.params.tenantId);
   const [updated] = await db
     .update(tenantsTable)
@@ -141,9 +125,7 @@ router.post("/tenants/:tenantId/approve", requireAuth, async (req, res): Promise
   res.json(updated);
 });
 
-router.get("/tenants/:tenantId/stats", requireAuth, async (req, res): Promise<void> => {
-  if (!ensureAdmin(req, res)) return;
-
+router.get("/tenants/:tenantId/stats", requireAuth, requireSuperAdmin(), ensureTenantAccess, async (req, res): Promise<void> => {
   const tenantId = String(req.params.tenantId);
 
   const [appStats, loanStats, customerStats] = await Promise.all([

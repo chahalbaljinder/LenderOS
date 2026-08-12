@@ -5,8 +5,55 @@
  * LendingOS — Multi-Tenant AI Lending Operating System API
  * OpenAPI spec version: 0.1.0
  */
+/**
+ * Overall health status
+ */
+export type HealthStatusStatus = typeof HealthStatusStatus[keyof typeof HealthStatusStatus];
+
+
+export const HealthStatusStatus = {
+  ok: 'ok',
+  degraded: 'degraded',
+  down: 'down',
+} as const;
+
+/**
+ * API service status
+ */
+export type HealthStatusApi = typeof HealthStatusApi[keyof typeof HealthStatusApi];
+
+
+export const HealthStatusApi = {
+  ok: 'ok',
+  degraded: 'degraded',
+  down: 'down',
+} as const;
+
+/**
+ * Database connectivity status
+ */
+export type HealthStatusDatabase = typeof HealthStatusDatabase[keyof typeof HealthStatusDatabase];
+
+
+export const HealthStatusDatabase = {
+  ok: 'ok',
+  degraded: 'degraded',
+  down: 'down',
+} as const;
+
 export interface HealthStatus {
-  status: string;
+  /** Overall health status */
+  status: HealthStatusStatus;
+  /** API service status */
+  api: HealthStatusApi;
+  /** Database connectivity status */
+  database: HealthStatusDatabase;
+  /** Server uptime in seconds */
+  uptime: number;
+  /** Health check timestamp (ISO 8601) */
+  timestamp: string;
+  /** API version */
+  version?: string;
 }
 
 export type TenantType = typeof TenantType[keyof typeof TenantType];

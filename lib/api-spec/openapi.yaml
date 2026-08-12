@@ -1312,9 +1312,30 @@ components:
   schemas:
     HealthStatus:
       type: object
-      required: [status]
+      required: [status, api, database, uptime, timestamp]
       properties:
-        status: { type: string }
+        status:
+          type: string
+          enum: [ok, degraded, down]
+          description: Overall health status
+        api:
+          type: string
+          enum: [ok, degraded, down]
+          description: API service status
+        database:
+          type: string
+          enum: [ok, degraded, down]
+          description: Database connectivity status
+        uptime:
+          type: number
+          description: Server uptime in seconds
+        timestamp:
+          type: string
+          format: date-time
+          description: Health check timestamp (ISO 8601)
+        version:
+          type: string
+          description: API version
 
     # ── TENANTS ────────────────────────────────────────────────────────────────
     Tenant:

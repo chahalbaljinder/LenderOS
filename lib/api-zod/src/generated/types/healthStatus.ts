@@ -5,7 +5,21 @@
  * LendingOS — Multi-Tenant AI Lending Operating System API
  * OpenAPI spec version: 0.1.0
  */
+import type { HealthStatusApi } from './healthStatusApi';
+import type { HealthStatusDatabase } from './healthStatusDatabase';
+import type { HealthStatusStatus } from './healthStatusStatus';
 
 export interface HealthStatus {
-  status: string;
+  /** Overall health status */
+  status: HealthStatusStatus;
+  /** API service status */
+  api: HealthStatusApi;
+  /** Database connectivity status */
+  database: HealthStatusDatabase;
+  /** Server uptime in seconds */
+  uptime: number;
+  /** Health check timestamp (ISO 8601) */
+  timestamp: Date;
+  /** API version */
+  version?: string;
 }

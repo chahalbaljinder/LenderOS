@@ -1,6 +1,4 @@
 import { Router } from "express";
-import { HealthCheckResponse } from "@workspace/api-zod";
-import { db } from "@workspace/db";
 import tenantsRouter from "./tenants";
 import usersRouter from "./users";
 import customersRouter from "./customers";
@@ -14,14 +12,11 @@ import repaymentsRouter from "./repayments";
 import collectionsRouter from "./collections";
 import analyticsRouter from "./analytics";
 import settingsRouter from "./settings";
+import healthRouter from "./health";
 
 const router = Router();
 
-router.get("/healthz", async (req, res): Promise<void> => {
-  const result = HealthCheckResponse.parse({ status: "ok" });
-  res.json(result);
-});
-
+router.use(healthRouter);
 router.use(tenantsRouter);
 router.use(usersRouter);
 router.use(customersRouter);
