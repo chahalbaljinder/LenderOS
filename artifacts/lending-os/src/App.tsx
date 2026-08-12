@@ -18,6 +18,9 @@ import ApplicationsList from "@/pages/applications/list";
 import CustomersList from "@/pages/customers/list";
 import LoansList from "@/pages/loans/list";
 import CollectionsList from "@/pages/collections/list";
+import ProductsList from "@/pages/products/list";
+import AuditList from "@/pages/audit/list";
+import SettingsPage from "@/pages/settings";
 import CustomerApply from "@/pages/apply";
 import NotFound from "@/pages/not-found";
 import PlaceholderPage from "@/pages/placeholder";
@@ -301,17 +304,7 @@ function ClerkHomeRedirect() {
   return <LandingPage />;
 }
 
-function ProductsPage() {
-  return <PlaceholderPage title="Loan Products" description="Manage product catalog and pricing" activeTab="products" badge="Core catalog" />;
-}
 
-function AuditPage() {
-  return <PlaceholderPage title="Audit Logs" description="Track admin actions and compliance events" activeTab="audit" badge="Compliance" />;
-}
-
-function SettingsPage() {
-  return <PlaceholderPage title="Tenant Settings" description="Configure workflow, notifications, and tenant preferences" activeTab="settings" badge="Configuration" />;
-}
 
 function PlatformAnalyticsPage() {
   return <PlaceholderPage title="Platform Analytics" description="Cross-tenant performance and risk signals" activeTab="analytics" badge="Insights" />;
@@ -371,9 +364,9 @@ function AppRoutes() {
         <Route path="/customers" component={CustomersList} />
         <Route path="/loans" component={LoansList} />
         <Route path="/collections" component={CollectionsList} />
-        <Route path="/products" component={ProductsPage} />
-        <Route path="/audit" component={AuditPage} />
-        <Route path="/settings" component={SettingsPage} />
+<Route path="/products/*" component={ProductsList} />
+<Route path="/audit/*" component={AuditList} />
+<Route path="/settings/*" component={SettingsPage} />
         <Route path="/platform/analytics" component={PlatformAnalyticsPage} />
         <Route path="/apply" component={CustomerApply} />
         <Route path="/" component={HomeRedirect} />

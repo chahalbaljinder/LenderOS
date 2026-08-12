@@ -2,20 +2,34 @@ import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { StatCard } from "@/components/ui/stat-card";
 import { useGetPlatformSummary } from "@workspace/api-client-react";
 import { Building2, Users, CreditCard, AlertTriangle } from "lucide-react";
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  ChartLegend,
+  ChartLegendContent,
+} from "@/components/ui/chart";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
 
 export default function SuperAdminDashboard() {
   const { data: summary, isLoading } = useGetPlatformSummary();
 
   const mockRevenueData = [
-    { name: 'Jan', value: 4000 },
-    { name: 'Feb', value: 3000 },
-    { name: 'Mar', value: 2000 },
-    { name: 'Apr', value: 2780 },
-    { name: 'May', value: 1890 },
-    { name: 'Jun', value: 2390 },
-    { name: 'Jul', value: 3490 },
+    { name: "Jan", value: 4000 },
+    { name: "Feb", value: 3000 },
+    { name: "Mar", value: 2000 },
+    { name: "Apr", value: 2780 },
+    { name: "May", value: 1890 },
+    { name: "Jun", value: 2390 },
+    { name: "Jul", value: 3490 },
   ];
+
+  const chartConfig = {
+    value: {
+      label: "Revenue",
+      color: "hsl(var(--primary))",
+    },
+  };
 
   return (
     <DashboardLayout activeTab="dashboard">
@@ -26,29 +40,29 @@ export default function SuperAdminDashboard() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <StatCard 
-            title="Total Tenants" 
-            value={summary?.totalTenants || "0"} 
+          <StatCard
+            title="Total Tenants"
+            value={summary?.totalTenants || "0"}
             trend={{ value: "2", label: "this month", positive: true }}
             icon={<Building2 className="w-4 h-4" />}
             loading={isLoading}
           />
-          <StatCard 
-            title="Total End Customers" 
-            value={summary?.totalCustomers?.toLocaleString() || "0"} 
+          <StatCard
+            title="Total End Customers"
+            value={summary?.totalCustomers?.toLocaleString() || "0"}
             trend={{ value: "12%", label: "vs last month", positive: true }}
             icon={<Users className="w-4 h-4" />}
             loading={isLoading}
           />
-          <StatCard 
-            title="Total AUM" 
-            value={`₹${((summary?.totalOutstanding || 0) / 10000000).toFixed(2)}Cr`} 
+          <StatCard
+            title="Total AUM"
+            value={`₹${((summary?.totalOutstanding || 0) / 10000000).toFixed(2)}Cr`}
             icon={<CreditCard className="w-4 h-4" />}
             loading={isLoading}
           />
-          <StatCard 
-            title="Platform Default Rate" 
-            value={`${summary?.defaultRate || 0}%`} 
+          <StatCard
+            title="Platform Default Rate"
+            value={`${summary?.defaultRate || 0}%`}
             trend={{ value: "0.1%", label: "vs last quarter", positive: false }}
             icon={<AlertTriangle className="w-4 h-4" />}
             loading={isLoading}
@@ -59,24 +73,44 @@ export default function SuperAdminDashboard() {
           <div className="lg:col-span-2 bg-card border border-border p-6">
             <h3 className="font-mono text-xs uppercase text-zinc-400 mb-6">Platform Revenue (Mock)</h3>
             <div className="h-72 w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={mockRevenueData}>
-                  <defs>
-                    <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="hsl(160 100% 40%)" stopOpacity={0.3}/>
-                      <stop offset="95%" stopColor="hsl(160 100% 40%)" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(240 10% 12%)" vertical={false} />
-                  <XAxis dataKey="name" stroke="hsl(240 10% 40%)" fontSize={12} tickLine={false} axisLine={false} />
-                  <YAxis stroke="hsl(240 10% 40%)" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => `₹${val}`} />
-                  <Tooltip 
-                    contentStyle={{ backgroundColor: 'hsl(240 10% 6%)', border: '1px solid hsl(240 10% 12%)', borderRadius: 0, fontFamily: 'monospace' }}
-                    itemStyle={{ color: 'hsl(160 100% 40%)' }}
-                  />
-                  <Area type="monotone" dataKey="value" stroke="hsl(160 100% 40%)" strokeWidth={2} fillOpacity={1} fill="url(#colorValue)" />
-                </AreaChart>
-              </ResponsiveContainer>
+              <ChartContainer config={chartConfig} className="h-full w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={mockRevenueData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
+                    <XAxis
+                      dataKey="name"
+                      stroke="hsl(var(--muted-foreground))"
+                      fontSize={12}
+                      fontFamily="var(--font-mono)"
+                      tickLine={false}
+                      axisLine={false}
+                    />
+                    <YAxis
+                      stroke="hsl(var(--muted-foreground))"
+                      fontSize={12}
+                      fontFamily="var(--font-mono)"
+                      tickLine={false}
+                      axisLine={false}
+                      tickFormatter={(val) => `₹${val}`}
+                    />
+                    <ChartTooltip content={<ChartTooltipContent formatter={(value) => [`₹${value.toLocaleString()}`, "Revenue"]} />} />
+                    <Area
+                      type="monotone"
+                      dataKey="value"
+                      stroke="hsl(var(--primary))"
+                      strokeWidth={2}
+                      fillOpacity={1}
+                      fill="url(#colorValue)"
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </ChartContainer>
             </div>
           </div>
 

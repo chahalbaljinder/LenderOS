@@ -1,19 +1,85 @@
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
+import { DataTable } from "@/components/ui/data-table";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { EmptyState } from "@/components/ui/empty-state";
 import { useListLoanApplications } from "@workspace/api-client-react";
 import { Link } from "wouter";
-import { Plus, Search, Filter, Activity, Check, X, Clock, FileText } from "lucide-react";
+import { Plus, Search, Filter, MoreHorizontal, ArrowRight } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export default function ApplicationsList() {
   const { data: appsRes, isLoading } = useListLoanApplications();
 
-  const getStatusDisplay = (status: string) => {
-    switch(status) {
-      case 'approved': return { color: 'text-primary', bg: 'bg-primary/10', border: 'border-primary/20', icon: <Check className="w-3 h-3" /> };
-      case 'rejected': return { color: 'text-destructive', bg: 'bg-destructive/10', border: 'border-destructive/20', icon: <X className="w-3 h-3" /> };
-      case 'draft': return { color: 'text-zinc-400', bg: 'bg-zinc-800', border: 'border-zinc-700', icon: <FileText className="w-3 h-3" /> };
-      default: return { color: 'text-yellow-500', bg: 'bg-yellow-500/10', border: 'border-yellow-500/20', icon: <Activity className="w-3 h-3" /> };
-    }
-  };
+  const columns: import("@/components/ui/data-table").Column<any>[] = [
+    {
+      key: "appId",
+      header: "App ID",
+      accessor: (row: any) => (
+        <span className="font-mono text-sm text-zinc-400">{row.applicationNumber || row.id.slice(0, 8).toUpperCase()}</span>
+      ),
+      width: "120px",
+      sortable: true,
+    },
+    {
+      key: "customer",
+      header: "Customer",
+      accessor: (row: any) => (
+        <div>
+          <div className="font-medium text-white">{row.customerName || "Unknown"}</div>
+          <div className="text-xs font-mono text-zinc-500">{(new Date(row.createdAt)).toLocaleDateString()}</div>
+        </div>
+      ),
+      sortable: true,
+    },
+    {
+      key: "product",
+      header: "Product",
+      accessor: (row: any) => (
+        <span className="font-mono text-sm text-zinc-300">{row.productName || "Standard Loan"}</span>
+      ),
+      hideOnMobile: true,
+    },
+    {
+      key: "amount",
+      header: "Amount",
+      accessor: (row: any) => (
+        <div className="font-mono text-sm text-white text-right">₹{row.requestedAmount?.toLocaleString()}</div>
+      ),
+      align: "right" as const,
+      width: "140px",
+      sortable: true,
+    },
+    {
+      key: "status",
+      header: "Status",
+      accessor: (row: any) => (
+        <StatusBadge status={row.status} />
+      ),
+      width: "140px",
+    },
+    {
+      key: "risk",
+      header: "Risk Grade",
+      accessor: (row: any) => {
+        const grade = row.riskGrade;
+        if (!grade) return <span className="font-mono text-xs text-zinc-600">PENDING</span>;
+        return (
+          <span className={cn(
+            "inline-flex font-mono text-sm font-bold px-2 py-1 rounded",
+            ["A1", "A2"].includes(grade) ? "bg-primary/10 text-primary" :
+            ["B1", "B2"].includes(grade) ? "bg-yellow-500/10 text-yellow-500" : "bg-destructive/10 text-destructive"
+          )}>
+            {grade}
+          </span>
+        );
+      },
+      width: "110px",
+      hideOnMobile: true,
+    },
+  ];
+
+  const data = appsRes?.data || [];
+  const isEmpty = !isLoading && data.length === 0;
 
   return (
     <DashboardLayout activeTab="applications">
@@ -28,88 +94,41 @@ export default function ApplicationsList() {
           </Link>
         </div>
 
-        <div className="mb-6 flex gap-4">
-          <div className="relative flex-1 max-w-md">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500" />
-            <input 
-              type="text" 
-              placeholder="Search by APP ID or customer name..." 
-              className="w-full bg-card border border-border pl-10 pr-4 py-2 text-sm font-mono text-white placeholder:text-zinc-600 focus:outline-none focus:border-primary"
-            />
-          </div>
-          <button className="flex items-center gap-2 px-4 py-2 bg-card border border-border text-sm font-mono text-zinc-400 hover:text-white transition-colors">
-            <Filter className="w-4 h-4" /> Filters
-          </button>
-        </div>
-
-        <div className="bg-card border border-border overflow-hidden">
-          {isLoading ? (
-            <div className="p-8 text-center font-mono text-sm text-primary animate-pulse">FETCHING_APPLICATIONS...</div>
-          ) : (
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-border bg-black/50 font-mono text-xs uppercase text-zinc-500">
-                  <th className="py-3 px-4 font-normal">App ID</th>
-                  <th className="py-3 px-4 font-normal">Customer</th>
-                  <th className="py-3 px-4 font-normal">Product</th>
-                  <th className="py-3 px-4 font-normal text-right">Amount</th>
-                  <th className="py-3 px-4 font-normal">Status</th>
-                  <th className="py-3 px-4 font-normal">Risk</th>
-                  <th className="py-3 px-4 font-normal"></th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {appsRes?.data.map((app) => {
-                  const statusInfo = getStatusDisplay(app.status);
-                  return (
-                    <tr key={app.id} className="hover:bg-white/5 transition-colors group">
-                      <td className="py-4 px-4 font-mono text-sm text-zinc-400">
-                        {app.applicationNumber || app.id.slice(0, 8)}
-                      </td>
-                      <td className="py-4 px-4">
-                        <div className="text-sm font-semibold text-white">{app.customerName || 'Unknown'}</div>
-                        <div className="text-xs font-mono text-zinc-500">{(new Date(app.createdAt)).toLocaleDateString()}</div>
-                      </td>
-                      <td className="py-4 px-4 font-mono text-sm text-zinc-300">
-                        {app.productName || 'Standard Loan'}
-                      </td>
-                      <td className="py-4 px-4 font-mono text-sm text-white text-right">
-                        ₹{app.requestedAmount?.toLocaleString()}
-                      </td>
-                      <td className="py-4 px-4">
-                        <span className={`inline-flex items-center gap-1.5 px-2 py-1 text-[10px] font-mono border uppercase tracking-wider ${statusInfo.bg} ${statusInfo.color} ${statusInfo.border}`}>
-                          {statusInfo.icon}
-                          {app.status.replace('_', ' ')}
-                        </span>
-                      </td>
-                      <td className="py-4 px-4">
-                        {app.riskGrade ? (
-                          <span className={`inline-flex font-mono text-sm font-bold ${['A1','A2'].includes(app.riskGrade) ? 'text-primary' : ['B1','B2'].includes(app.riskGrade) ? 'text-yellow-500' : 'text-destructive'}`}>
-                            {app.riskGrade}
-                          </span>
-                        ) : (
-                          <span className="font-mono text-xs text-zinc-600">PENDING</span>
-                        )}
-                      </td>
-                      <td className="py-4 px-4 text-right">
-                        <Link href={`/applications/${app.id}`} className="text-xs font-mono text-primary hover:text-white transition-colors opacity-0 group-hover:opacity-100">
-                          REVIEW →
-                        </Link>
-                      </td>
-                    </tr>
-                  )
-                })}
-                {appsRes?.data.length === 0 && (
-                  <tr>
-                    <td colSpan={7} className="py-12 text-center text-sm font-mono text-zinc-500">
-                      NO_APPLICATIONS_IN_QUEUE
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          )}
-        </div>
+        {isEmpty ? (
+          <EmptyState
+            illustration="add"
+            title="No Applications Yet"
+            description="Start by creating your first loan application. The underwriting queue will populate here."
+            action={{ label: "Create Application", icon: <Plus className="w-4 h-4" />, onClick: () => {} }}
+          />
+        ) : (
+          <DataTable
+            columns={columns}
+            data={data}
+            isLoading={isLoading}
+            rowKey={(row) => row.id}
+            emptyMessage="No applications in queue"
+            showSearch
+            searchPlaceholder="Search by APP ID or customer name..."
+            pagination={{
+              page: 1,
+              pageSize: 20,
+              total: appsRes?.total || 0,
+              onPageChange: () => {},
+              pageSizeOptions: [10, 25, 50, 100],
+            }}
+            rowActions={[
+              {
+                label: "Review",
+                icon: <ArrowRight className="w-3 h-3" />,
+                variant: "outline",
+                onClick: (row, e) => { e.stopPropagation(); },
+              },
+            ]}
+            onRowClick={(row) => {}}
+            ariaLabel="Loan applications table"
+          />
+        )}
       </div>
     </DashboardLayout>
   );
