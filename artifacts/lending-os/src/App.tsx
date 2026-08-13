@@ -71,20 +71,20 @@ const clerkAppearance = {
     logoImageUrl: `${window.location.origin}${basePath}/logo.svg`,
   },
   variables: {
-    colorPrimary: "hsl(160 100% 40%)",
+    colorPrimary: "hsl(160 100% 42%)",
     colorForeground: "hsl(0 0% 98%)",
-    colorMutedForeground: "hsl(240 10% 60%)",
+    colorMutedForeground: "hsl(240 10% 65%)",
     colorDanger: "hsl(0 84% 60%)",
-    colorBackground: "hsl(240 10% 6%)",
-    colorInput: "hsl(240 10% 12%)",
+    colorBackground: "hsl(240 10% 8%)",
+    colorInput: "hsl(240 10% 16%)",
     colorInputForeground: "hsl(0 0% 98%)",
-    colorNeutral: "hsl(240 10% 12%)",
+    colorNeutral: "hsl(240 10% 16%)",
     fontFamily: "Plus Jakarta Sans, sans-serif",
     borderRadius: "0.25rem",
   },
   elements: {
     rootBox: "w-full flex justify-center",
-    cardBox: "bg-[#09090b] rounded-md border border-[#1e1e24] w-[440px] max-w-full overflow-hidden",
+    cardBox: "bg-[#0a0a0c] rounded-md border border-[#1e1e24] w-[440px] max-w-full overflow-hidden",
     card: "!shadow-none !border-0 !bg-transparent !rounded-none",
     footer: "!shadow-none !border-0 !bg-transparent !rounded-none",
     headerTitle: "text-white font-bold tracking-tight",
@@ -99,13 +99,13 @@ const clerkAppearance = {
     alertText: "text-red-400",
     logoBox: "mb-6",
     logoImage: "h-8 object-contain",
-    socialButtonsBlockButton: "border-zinc-800 bg-zinc-900 hover:bg-zinc-800 text-white rounded-none",
+    socialButtonsBlockButton: "border-zinc-700 bg-zinc-800 hover:bg-zinc-700 text-white rounded-none",
     formButtonPrimary: "bg-[#00cc88] hover:bg-[#00ffaa] text-black font-semibold rounded-none border-none",
-    formFieldInput: "bg-zinc-900 border-zinc-800 text-white rounded-none focus:ring-1 focus:ring-[#00cc88] font-mono placeholder:text-zinc-600",
+    formFieldInput: "bg-zinc-800 border-zinc-700 text-white rounded-none focus:ring-1 focus:ring-[#00cc88] font-mono placeholder:text-zinc-500",
     footerAction: "bg-zinc-950",
     dividerLine: "bg-zinc-800",
     alert: "border-red-900 bg-red-950/20",
-    otpCodeFieldInput: "bg-zinc-900 border-zinc-800 text-white rounded-none font-mono",
+    otpCodeFieldInput: "bg-zinc-800 border-zinc-700 text-white rounded-none font-mono",
     formFieldRow: "mb-4",
     main: "gap-6",
   },
@@ -337,14 +337,7 @@ function DashboardRoute() {
   return <TenantDashboard />;
 }
 
-function AuthRouteRedirect() {
-  const [, setLocation] = useLocation();
-  useEffect(() => {
-    setLocation(window.location.pathname, { replace: true });
-  }, [setLocation]);
 
-  return null;
-}
 
 function AppRoutes() {
   return (
@@ -372,7 +365,6 @@ function AppRoutes() {
         <Route path="/" component={HomeRedirect} />
         <Route component={NotFound} />
       </Switch>
-      <AuthRouteRedirect />
     </QueryClientProvider>
   );
 }
