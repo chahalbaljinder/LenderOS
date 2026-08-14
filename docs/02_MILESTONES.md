@@ -38,7 +38,7 @@ Establish the exact current state from repository + current-state report.
 
 ## M1 — AUTHENTICATION FOUNDATION
 
-**Status:** ACTIVE
+**Status:** COMPLETE
 
 ### Objective
 Make real authentication reliable without breaking demo mode.
@@ -51,16 +51,18 @@ Make real authentication reliable without breaking demo mode.
 - role resolution
 
 ### Exit Criteria
-- Clerk login works.
-- Protected routes remain protected.
-- `/api/users/me` works.
-- Demo mode still works.
-- Unauthorized users cannot access protected APIs.
-- Multiple roles resolve correctly.
+- ✅ Clerk login works.
+- ✅ Protected routes remain protected.
+- ✅ `/api/users/me` works.
+- ✅ Demo mode still works.
+- ✅ Unauthorized users cannot access protected APIs.
+- ✅ Multiple roles resolve correctly.
 
 ---
 
 ## M2 — ROUTING & NAVIGATION
+
+**Status:** ACTIVE
 
 ### Objective
 Make navigation truthful.
@@ -240,4 +242,5 @@ All critical personas can complete their required workflows end-to-end.
 | Date | Milestone | Status | Notes |
 |---|---|---|---|
 | 2026-08-15 | M0 | COMPLETE | Baseline verified, AI baseline created |
-| 2026-08-15 | M1 | ACTIVE | Clerk token getter registration implemented; backend bearer token verification added |
+| 2026-08-15 | M1 | COMPLETE | Clerk auth transport fixed: bearer token verification, login redirect, logout, session race condition |
+| 2026-08-15 | M2 | ACTIVE | Routing & Navigation - fix missing routes, placeholders, wildcards |
