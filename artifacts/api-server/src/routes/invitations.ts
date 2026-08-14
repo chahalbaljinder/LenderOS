@@ -280,4 +280,43 @@ router.post("/invitations/:id/revoke", requireAuth, requireTenantAdmin(), ensure
   }
 });
 
+router.post("/invitations/accept/:token", async (req, res): Promise<void> => {
+  try {
+    const [invitation] = await db
+      .select()
+      .from(invitationsTable)
+      .where(eq(invitationsTable.token, req.params.token))
+      .limit(1);
+
+    if (!invitation) {
+      res.status(404).json({ error: "Not Found", message: "Invalid invitation token" });
+      return;
+    }
+
+    if (invitation.status !== "pending") {
+      res.status(400).json({ error: "Bad Request", message: `Invitation is ${invitation.status}, cannot accept` });
+      return;
+    }
+
+    if (invitation.expiresAt < new Date()) {
+      await db
+        .update(invitationsTable)
+        .set({ status: "expired", updatedAt: new Date() })
+        .where(eq(invitationsTable.id, invitation.id));
+      res.status(400).json({ error: "Bad Request", message: "Invitation has expired" });
+      return;
+    }
+
+    await db
+      .update(invitationsTable)
+      .set({ status: "accepted", acceptedAt: new Date(), updatedAt: new Date() })
+      .where(eq(invitationsTable.id, invitation.id));
+
+    res.json({ message: "Invitation accepted", email: invitation.email, tenantId: invitation.tenantId });
+  } catch (error) {
+    console.error("Accept invitation error:", error);
+    res.status(500).json({ error: "Internal Server Error", message: "Failed to accept invitation" });
+  }
+});
+
 export default router;

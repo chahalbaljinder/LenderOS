@@ -1,4 +1,4 @@
-import { useEffect, useRef, Component, type ReactNode } from "react";
+import { useEffect, useRef, useState, Component, type ReactNode } from "react";
 import { ClerkProvider, SignIn, SignUp, useClerk, useAuth, useUser } from "@clerk/react";
 import { publishableKeyFromHost } from "@clerk/react/internal";
 import { shadcn } from "@clerk/themes";
@@ -263,7 +263,14 @@ function SignUpPage() {
     );
   }
 
-return (
+const searchParams = new URLSearchParams(window.location.search);
+  const invitationToken = searchParams.get("invitation_token");
+
+  if (invitationToken) {
+    sessionStorage.setItem("lenderos_invitation_token", invitationToken);
+  }
+
+  return (
     <div className="flex min-h-[100dvh] items-center justify-center bg-black px-4 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-zinc-900 via-black to-black">
       <SignUp
         routing="path"
@@ -348,6 +355,129 @@ function TenantDetailPage() {
   return <PlaceholderPage title={`Tenant ${params.tenantId ?? "Details"}`} description="Inspect tenant status, exposure, and controls" activeTab="tenants" badge="Detail" />;
 }
 
+function AcceptInvitationPage() {
+  const params = useParams<{ token: string }>();
+  const { isLoaded, isSignedIn } = useAuth();
+  const [error, setError] = useState<string | null>(null);
+  const [accepted, setAccepted] = useState(false);
+  const [accepting, setAccepting] = useState(true);
+
+  useEffect(() => {
+    if (!params.token) {
+      setError("Invalid invitation link");
+      setAccepting(false);
+      return;
+    }
+
+    const acceptInvitation = async () => {
+      try {
+        const response = await fetch(`/api/invitations/accept/${params.token}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+        });
+
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.message || "Failed to accept invitation");
+        }
+
+        setAccepted(true);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to accept invitation");
+      } finally {
+        setAccepting(false);
+      }
+    };
+
+    acceptInvitation();
+  }, [params.token]);
+
+  if (!isLoaded) {
+    return <div className="flex min-h-screen items-center justify-center font-mono text-primary animate-pulse">Loading...</div>;
+  }
+
+  if (isSignedIn) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-black px-4 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-zinc-900 via-black to-black">
+        <div className="w-[480px] max-w-full bg-[#09090b] border border-[#1e1e24] p-8 rounded-lg shadow-2xl text-white text-center">
+          <div className="w-16 h-16 bg-emerald-500/10 border border-emerald-500/30 rounded-full flex items-center justify-center mx-auto mb-6">
+            <span className="text-3xl">✓</span>
+          </div>
+          <h1 className="text-xl font-bold font-mono tracking-tight mb-2">Already Signed In</h1>
+          <p className="text-sm text-zinc-400 mb-6">You are already signed in. Redirecting to dashboard...</p>
+          <div className="animate-pulse">Loading...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (accepting) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-black px-4 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-zinc-900 via-black to-black">
+        <div className="w-[480px] max-w-full bg-[#09090b] border border-[#1e1e24] p-8 rounded-lg shadow-2xl text-white text-center">
+          <div className="w-12 h-12 border-4 border-emerald-400 border-t-transparent rounded-full animate-spin mx-auto mb-6" />
+          <p className="text-zinc-400 font-mono">Validating invitation...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const handleSignUp = () => {
+    if (!params.token) {
+      setError("Invalid invitation link");
+      return;
+    }
+    window.location.href = `/sign-up?invitation_token=${params.token}`;
+  };
+
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-black px-4 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-zinc-900 via-black to-black">
+      <div className="w-[480px] max-w-full bg-[#09090b] border border-[#1e1e24] p-8 rounded-lg shadow-2xl text-white">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-10 h-10 bg-emerald-500/10 border border-emerald-500/30 rounded flex items-center justify-center text-emerald-400">
+            <span className="text-2xl">📨</span>
+          </div>
+          <div>
+            <h1 className="text-lg font-bold font-mono tracking-tight text-white">Accept Invitation</h1>
+            <p className="text-xs text-zinc-400 font-mono">Join your organization on LenderOS</p>
+          </div>
+        </div>
+
+        {error && (
+          <div className="mb-6 p-4 bg-red-950/50 border border-red-500/30 rounded text-red-400 text-sm font-mono">
+            {error}
+          </div>
+        )}
+
+        {accepted && !error && (
+          <div className="mb-6 p-4 bg-emerald-950/50 border border-emerald-500/30 rounded text-emerald-400 text-sm font-mono">
+            ✓ Invitation accepted! Please create your account to continue.
+          </div>
+        )}
+
+        <div className="mb-6 p-4 bg-zinc-950 border border-zinc-800 rounded text-sm text-zinc-300">
+          <p>You have been invited to join an organization on LenderOS.</p>
+          <p className="mt-2">Click below to create your account and accept the invitation.</p>
+        </div>
+
+        <button
+          onClick={handleSignUp}
+          disabled={!params.token || !accepted}
+          className="w-full py-3 bg-[#00cc88] hover:bg-[#00ffaa] text-black font-semibold font-mono text-sm rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Create Account & Accept
+        </button>
+
+        <p className="mt-6 text-xs text-zinc-500 text-center">
+          Already have an account?{" "}
+          <a href="/sign-in" className="text-emerald-400 hover:underline">Sign in</a>
+        </p>
+      </div>
+    </div>
+  );
+}
+
 function DashboardRoute() {
   const { isLoaded, isSignedIn } = useAuth();
   const { data: user, isLoading } = useGetMe();
@@ -376,9 +506,10 @@ function AppRoutes() {
     <QueryClientProvider client={queryClient}>
       {!clerkPubKey && <DemoBanner />}
       <ClerkQueryClientCacheInvalidator />
-      <Switch>
+<Switch>
         <Route path="/sign-in/*?" component={SignInPage} />
         <Route path="/sign-up/*?" component={SignUpPage} />
+        <Route path="/accept-invitation/:token" component={AcceptInvitationPage} />
         <Route path="/dashboard" component={DashboardRoute} />
         <Route path="/tenants/new" component={NewTenantPage} />
         <Route path="/tenants/:tenantId" component={TenantDetailPage} />
@@ -389,9 +520,9 @@ function AppRoutes() {
         <Route path="/customers" component={CustomersList} />
         <Route path="/loans" component={LoansList} />
         <Route path="/collections" component={CollectionsList} />
-<Route path="/products/*" component={ProductsList} />
-<Route path="/audit/*" component={AuditList} />
-<Route path="/settings/*" component={SettingsPage} />
+        <Route path="/products/*" component={ProductsList} />
+        <Route path="/audit/*" component={AuditList} />
+        <Route path="/settings/*" component={SettingsPage} />
         <Route path="/platform/analytics" component={PlatformAnalyticsPage} />
         <Route path="/apply" component={CustomerApply} />
         <Route path="/" component={HomeRedirect} />

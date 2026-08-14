@@ -18,3 +18,6 @@ This file records meaningful implementation changes.
 | 2026-08-15 | M1b | Invitation API (CRUD + resend/cancel/revoke) | artifacts/api-server/src/routes/invitations.ts | 5/5 API tests pass | Tenant-scoped, RBAC protected, token-based acceptance flow |
 | 2026-08-15 | M1b | Clerk webhook endpoint with provisioning logic | artifacts/api-server/src/routes/webhooks.ts | 5/5 API tests pass | Handles user.created → invitation provisioning, customer linking, user.deleted cleanup |
 | 2026-08-15 | M1b | Register new routes | artifacts/api-server/src/routes/index.ts | 5/5 API tests pass | Added invitationsRouter and webhooksRouter |
+| 2026-08-15 | M1b | Invitation acceptance API by token | artifacts/api-server/src/routes/invitations.ts | 5/5 API tests pass | POST /invitations/accept/:token marks invitation as accepted |
+| 2026-08-15 | M1b | Accept invitation page | artifacts/lending-os/src/App.tsx | 5/5 API tests pass | /accept-invitation/:token validates token, calls accept API, redirects to sign-up |
+| 2026-08-15 | M1b | Sign-up page handles invitation token | artifacts/lending-os/src/App.tsx | 5/5 API tests pass | Stores invitation_token in sessionStorage for webhook matching |
