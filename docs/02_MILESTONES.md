@@ -60,9 +60,57 @@ Make real authentication reliable without breaking demo mode.
 
 ---
 
-## M2 — ROUTING & NAVIGATION
+## M1 — AUTHENTICATION FOUNDATION
+
+**Status:** COMPLETE
+
+### Objective
+Make real authentication reliable without breaking demo mode.
+
+### Scope
+- Clerk token/session transport
+- `/api/users/me`
+- protected route behavior
+- logout/re-login
+- role resolution
+
+### Exit Criteria
+- ✅ Clerk login works.
+- ✅ Protected routes remain protected.
+- ✅ `/api/users/me` works.
+- ✅ Demo mode still works.
+- ✅ Unauthorized users cannot access protected APIs.
+- ✅ Multiple roles resolve correctly.
+
+---
+
+## M1b — IDENTITY PROVISIONING FOUNDATION
 
 **Status:** ACTIVE
+
+### Objective
+Build the identity provisioning layer: invitations, Clerk webhooks, and customer-Clerk linking — the prerequisite for all three POVs to onboard users in production.
+
+### Scope
+- `customers.clerkId` column (nullable, unique)
+- `invitations` table with full lifecycle (INVITED → PENDING → ACCEPTED → PROVISIONED → ACTIVE + EXPIRED/CANCELLED/REVOKED)
+- Invitation API: create, list, resend, cancel
+- Clerk webhook endpoint: `user.created` → provision user/customer
+- Provisioning logic: invitation → tenant+role; existing customer → link clerkId; new → create customer
+- Demo invitation seed for NBFC admin onboarding
+
+### Exit Criteria
+- ✅ Superadmin can invite NBFC admin via UI → email sent → admin signs up → auto-provisioned with tenant+role
+- ✅ NBFC admin can invite staff via UI → staff signs up → auto-provisioned with tenant+role
+- ✅ Borrower signs up via Clerk → webhook links to existing customer record (by email) → customer role assigned
+- ✅ Borrower with no existing record → webhook creates customer record
+- ✅ Invitation expiration, cancellation, revocation work
+- ✅ Tenant isolation enforced during provisioning
+- ✅ All existing tests pass; new tests for invitation/webhook flow
+
+---
+
+## M2 — ROUTING & NAVIGATION
 
 ### Objective
 Make navigation truthful.
@@ -243,4 +291,5 @@ All critical personas can complete their required workflows end-to-end.
 |---|---|---|---|
 | 2026-08-15 | M0 | COMPLETE | Baseline verified, AI baseline created |
 | 2026-08-15 | M1 | COMPLETE | Clerk auth transport fixed: bearer token verification, login redirect, logout, session race condition |
-| 2026-08-15 | M2 | ACTIVE | Routing & Navigation - fix missing routes, placeholders, wildcards |
+| 2026-08-15 | M1b | ACTIVE | Identity provisioning: invitations, Clerk webhook, customer.clerkId |
+| 2026-08-15 | M2 | NOT_STARTED | Routing & Navigation - fix missing routes, placeholders, wildcards |

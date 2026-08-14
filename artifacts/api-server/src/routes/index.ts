@@ -13,6 +13,8 @@ import collectionsRouter from "./collections";
 import analyticsRouter from "./analytics";
 import settingsRouter from "./settings";
 import healthRouter from "./health";
+import invitationsRouter from "./invitations";
+import webhooksRouter from "./webhooks";
 
 const router = Router();
 
@@ -30,5 +32,7 @@ router.use(repaymentsRouter);
 router.use(collectionsRouter);
 router.use(analyticsRouter);
 router.use(settingsRouter);
+router.use(invitationsRouter);
+router.use(webhooksRouter);
 
 export default router;

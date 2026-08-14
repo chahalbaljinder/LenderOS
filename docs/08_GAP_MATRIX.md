@@ -4,8 +4,9 @@ This file is a living matrix. Update it after verification.
 
 | Area | Current State | Target | Gap | Milestone | Status |
 |---|---|---|---|---|---|
-| Authentication | Clerk + demo; Clerk transport issue | Reliable production auth + demo | Token/session transport | M1 | OPEN |
-| Routing | Missing/placeholder routes | Complete truthful routes | Detail/action routes | M2 | OPEN |
+| Authentication | Clerk + demo; Clerk transport issue | Reliable production auth + demo | Token/session transport | M1 | COMPLETE |
+| Identity Provisioning | ❌ Missing entirely | Invitations, webhooks, customer.clerkId | Full provisioning layer | M1b | ACTIVE |
+| Routing | Missing/placeholder routes | Complete truthful routes | Detail/action routes | M2 | NOT_STARTED |
 | Customer application | Working public flow | Full borrower lifecycle | Review/offer/loan UI | M3-M5 | OPEN |
 | Application review | Backend capability | Full reviewer UI | Detail/review/actions | M3 | OPEN |
 | Offers | Backend/domain exists | End-to-end borrower offer | UI/state integration | M4 | OPEN |

@@ -34,6 +34,7 @@ export const customersTable = pgTable("customers", {
   tenantId: text("tenant_id")
     .notNull()
     .references(() => tenantsTable.id),
+  clerkId: text("clerk_id").unique(),
   firstName: text("first_name").notNull(),
   lastName: text("last_name").notNull(),
   email: text("email").notNull(),
