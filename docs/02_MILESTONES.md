@@ -14,7 +14,7 @@ Status values:
 
 ## M0 — VERIFIED BASELINE
 
-**Status:** ACTIVE initially
+**Status:** COMPLETE
 
 ### Objective
 Establish the exact current state from repository + current-state report.
@@ -38,7 +38,7 @@ Establish the exact current state from repository + current-state report.
 
 ## M1 — AUTHENTICATION FOUNDATION
 
-**Status:** NOT_STARTED
+**Status:** ACTIVE
 
 ### Objective
 Make real authentication reliable without breaking demo mode.
@@ -239,4 +239,5 @@ All critical personas can complete their required workflows end-to-end.
 
 | Date | Milestone | Status | Notes |
 |---|---|---|---|
-| YYYY-MM-DD | M0 | ACTIVE | Initial AI baseline |
+| 2026-08-15 | M0 | COMPLETE | Baseline verified, AI baseline created |
+| 2026-08-15 | M1 | ACTIVE | Clerk token getter registration implemented |

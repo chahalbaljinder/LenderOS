@@ -1,5 +1,5 @@
 import { useEffect, useRef, Component, type ReactNode } from "react";
-import { ClerkProvider, SignIn, SignUp, useClerk } from "@clerk/react";
+import { ClerkProvider, SignIn, SignUp, useClerk, useAuth } from "@clerk/react";
 import { publishableKeyFromHost } from "@clerk/react/internal";
 import { shadcn } from "@clerk/themes";
 import { Switch, Route, useLocation, Router as WouterRouter, Link, useParams } from "wouter";
@@ -7,7 +7,7 @@ import { QueryClient, QueryClientProvider, useQueryClient } from "@tanstack/reac
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/theme-provider";
-import { useGetMe } from "@workspace/api-client-react";
+import { useGetMe, setAuthTokenGetter } from "@workspace/api-client-react";
 import { KeyRound, ArrowRight, ShieldCheck, RefreshCw } from "lucide-react";
 
 import LandingPage from "@/pages/landing";
@@ -292,6 +292,16 @@ function ClerkQueryClientCacheInvalidatorInternal() {
   return null;
 }
 
+function ClerkAuthTokenRegistrar() {
+  const { getToken } = useAuth();
+
+  useEffect(() => {
+    setAuthTokenGetter(() => getToken());
+  }, [getToken]);
+
+  return null;
+}
+
 function AppRedirect() {
   return <LandingPage />;
 }
@@ -400,6 +410,7 @@ function ClerkProviderWithRoutes() {
       routerPush={(to) => setLocation(stripBase(to))}
       routerReplace={(to) => setLocation(stripBase(to), { replace: true })}
     >
+      <ClerkAuthTokenRegistrar />
       <AppRoutes />
     </ClerkProvider>
   );
