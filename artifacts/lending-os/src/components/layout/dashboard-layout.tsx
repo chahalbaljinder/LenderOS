@@ -3,6 +3,7 @@ import { Link, useLocation } from "wouter";
 import { LogOut, Settings, Users, Activity, Wallet, Shield, Briefcase, FileText, ShieldCheck, UserCheck, ChevronDown } from "lucide-react";
 import { useGetMe } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
+import { useClerk, useAuth } from "@clerk/react";
 
 // Mirror the same check used in App.tsx — avoids calling useClerk() outside <ClerkProvider>.
 const _rawKey = (import.meta as any).env?.VITE_CLERK_PUBLISHABLE_KEY ?? "";
@@ -19,9 +20,19 @@ export function DashboardLayout({
   children: React.ReactNode;
   activeTab: string;
 }) {
-  const { data: user } = useGetMe();
-  const isSuper =
-    user?.role === "super_admin" || user?.role === "platform_admin";
+  const { isLoaded, isSignedIn } = useAuth();
+  const { data: user, isLoading } = useGetMe();
+
+  // Wait for Clerk to load session before rendering
+  if (!isLoaded || !isSignedIn) {
+    return <div className="flex min-h-screen items-center justify-center font-mono text-primary animate-pulse">Loading session...</div>;
+  }
+
+  if (isLoading) {
+    return <div className="flex min-h-screen items-center justify-center font-mono text-primary animate-pulse">Loading Workspace...</div>;
+  }
+
+  const isSuper = user?.role === "super_admin" || user?.role === "platform_admin";
 
   return (
     <div className="min-h-screen bg-background flex flex-col md:flex-row font-sans">
@@ -225,10 +236,11 @@ function DemoRoleSwitcher() {
 
 function Header({ user }: { user: any }) {
   const [, setLocation] = useLocation();
+  const { signOut } = useClerk();
 
   const handleSignOut = async () => {
     if (isClerkConfigured) {
-      window.location.href = "/";
+      await signOut({ redirectUrl: "/" });
     } else {
       localStorage.removeItem("lenderos_demo_user_id");
       setLocation("/");

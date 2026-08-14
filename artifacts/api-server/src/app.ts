@@ -63,8 +63,10 @@ function createApp(): Express {
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
 
-  // Apply general rate limiting to all routes (except health check)
-  app.use(generalLimiter);
+  // Apply general rate limiting to all routes (except health check) - skip in dev
+  if (process.env.NODE_ENV === "production") {
+    app.use(generalLimiter);
+  }
 
   const rawClerkKey = process.env.CLERK_PUBLISHABLE_KEY;
   const isClerkKeyValid =
@@ -91,9 +93,11 @@ function createApp(): Express {
   app.use("/api/sign-in", authLimiter);
   app.use("/api/sign-up", authLimiter);
 
-  // Apply strict rate limiting to sensitive operations
-  app.use("/api/tenants", strictLimiter);
-  app.use("/api/users", strictLimiter);
+  // Apply strict rate limiting to sensitive operations - skip in dev
+  if (process.env.NODE_ENV === "production") {
+    app.use("/api/tenants", strictLimiter);
+    app.use("/api/users", strictLimiter);
+  }
 
   app.use("/api", async (req: Request, res: Response, next: NextFunction) => {
     try {

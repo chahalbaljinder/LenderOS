@@ -1,5 +1,5 @@
 import { useEffect, useRef, Component, type ReactNode } from "react";
-import { ClerkProvider, SignIn, SignUp, useClerk, useAuth } from "@clerk/react";
+import { ClerkProvider, SignIn, SignUp, useClerk, useAuth, useUser } from "@clerk/react";
 import { publishableKeyFromHost } from "@clerk/react/internal";
 import { shadcn } from "@clerk/themes";
 import { Switch, Route, useLocation, Router as WouterRouter, Link, useParams } from "wouter";
@@ -237,7 +237,12 @@ function SignInPage() {
 
   return (
     <div className="flex min-h-[100dvh] items-center justify-center bg-black px-4 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-zinc-900 via-black to-black">
-      <SignIn routing="path" path={`${basePath}/sign-in`} signUpUrl={`${basePath}/sign-up`} />
+      <SignIn
+        routing="path"
+        path={`${basePath}/sign-in`}
+        signUpUrl={`${basePath}/sign-up`}
+        forceRedirectUrl={`${basePath}/dashboard`}
+      />
     </div>
   );
 }
@@ -258,9 +263,14 @@ function SignUpPage() {
     );
   }
 
-  return (
+return (
     <div className="flex min-h-[100dvh] items-center justify-center bg-black px-4 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-zinc-900 via-black to-black">
-      <SignUp routing="path" path={`${basePath}/sign-up`} signInUrl={`${basePath}/sign-in`} />
+      <SignUp
+        routing="path"
+        path={`${basePath}/sign-up`}
+        signInUrl={`${basePath}/sign-in`}
+        forceRedirectUrl={`${basePath}/dashboard`}
+      />
     </div>
   );
 }
@@ -339,7 +349,19 @@ function TenantDetailPage() {
 }
 
 function DashboardRoute() {
+  const { isLoaded, isSignedIn } = useAuth();
   const { data: user, isLoading } = useGetMe();
+
+  // Wait for Clerk to load session before making API call
+  if (!isLoaded) {
+    return <div className="flex min-h-screen items-center justify-center font-mono text-primary animate-pulse">Loading session...</div>;
+  }
+
+  // If not signed in, redirect to sign-in
+  if (!isSignedIn) {
+    return <div className="flex min-h-screen items-center justify-center font-mono text-primary animate-pulse">Redirecting to sign in...</div>;
+  }
+
   if (isLoading) return <div className="flex min-h-screen items-center justify-center font-mono text-primary animate-pulse">Loading Workspace...</div>;
   if (user?.role === 'super_admin' || user?.role === 'platform_admin') {
     return <SuperAdminDashboard />;
@@ -387,7 +409,7 @@ function ClerkProviderWithRoutes() {
   }
 
   return (
-    <ClerkProvider
+<ClerkProvider
       publishableKey={clerkPubKey}
       {...(clerkProxyUrl ? { proxyUrl: clerkProxyUrl } : {})}
       appearance={clerkAppearance}
