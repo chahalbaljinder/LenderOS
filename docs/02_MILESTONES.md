@@ -240,4 +240,4 @@ All critical personas can complete their required workflows end-to-end.
 | Date | Milestone | Status | Notes |
 |---|---|---|---|
 | 2026-08-15 | M0 | COMPLETE | Baseline verified, AI baseline created |
-| 2026-08-15 | M1 | ACTIVE | Clerk token getter registration implemented |
+| 2026-08-15 | M1 | ACTIVE | Clerk token getter registration implemented; backend bearer token verification added |

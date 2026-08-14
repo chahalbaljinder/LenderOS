@@ -1,4 +1,4 @@
-import { getAuth } from "@clerk/express";
+import { getAuth, verifyToken } from "@clerk/express";
 import { Request, Response, NextFunction } from "express";
 import { db, usersTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
@@ -31,11 +31,26 @@ export const requireAuth = async (
   if (demoHeader) {
     clerkId = demoHeader;
   } else if (configured) {
-    try {
-      const auth = getAuth(req);
-      clerkId = auth?.userId;
-    } catch {
-      clerkId = undefined;
+    // 2. Check for bearer token in Authorization header (works in dev and prod)
+    const authHeader = req.headers.authorization;
+    if (authHeader?.startsWith("Bearer ")) {
+      const token = authHeader.slice(7);
+      try {
+        const verified = await verifyToken(token, { secretKey: process.env.CLERK_SECRET_KEY! });
+        clerkId = verified.sub;
+      } catch {
+        clerkId = undefined;
+      }
+    }
+
+    // 3. Fall back to cookie-based auth via clerkMiddleware
+    if (!clerkId) {
+      try {
+        const auth = getAuth(req);
+        clerkId = auth?.userId;
+      } catch {
+        clerkId = undefined;
+      }
     }
   }
 
