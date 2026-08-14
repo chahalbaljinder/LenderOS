@@ -241,7 +241,6 @@ function SignInPage() {
         routing="path"
         path={`${basePath}/sign-in`}
         signUpUrl={`${basePath}/sign-up`}
-        forceRedirectUrl={`${basePath}/dashboard`}
       />
     </div>
   );
@@ -276,7 +275,6 @@ const searchParams = new URLSearchParams(window.location.search);
         routing="path"
         path={`${basePath}/sign-up`}
         signInUrl={`${basePath}/sign-in`}
-        forceRedirectUrl={`${basePath}/dashboard`}
       />
     </div>
   );
@@ -494,9 +492,9 @@ function DashboardRoute() {
 
   if (isLoading) return <div className="flex min-h-screen items-center justify-center font-mono text-primary animate-pulse">Loading Workspace...</div>;
   if (user?.role === 'super_admin' || user?.role === 'platform_admin') {
-    return <SuperAdminDashboard />;
+    return <SuperAdminDashboard user={user} />;
   }
-  return <TenantDashboard />;
+  return <TenantDashboard user={user} />;
 }
 
 
@@ -546,6 +544,8 @@ function ClerkProviderWithRoutes() {
       appearance={clerkAppearance}
       signInUrl={`${basePath}/sign-in`}
       signUpUrl={`${basePath}/sign-up`}
+      afterSignInUrl={`${basePath}/dashboard`}
+      afterSignUpUrl={`${basePath}/dashboard`}
       localization={{
         signIn: {
           start: {

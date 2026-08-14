@@ -16,19 +16,23 @@ const isClerkConfigured =
 export function DashboardLayout({
   children,
   activeTab,
+  user: userProp,
 }: {
   children: React.ReactNode;
   activeTab: string;
+  user?: any;
 }) {
   const { isLoaded, isSignedIn } = useAuth();
-  const { data: user, isLoading } = useGetMe();
+  const { data: userFromHook, isLoading } = useGetMe();
+
+  const user = userProp ?? userFromHook;
 
   // Wait for Clerk to load session before rendering
   if (!isLoaded || !isSignedIn) {
     return <div className="flex min-h-screen items-center justify-center font-mono text-primary animate-pulse">Loading session...</div>;
   }
 
-  if (isLoading) {
+  if (isLoading && !userProp) {
     return <div className="flex min-h-screen items-center justify-center font-mono text-primary animate-pulse">Loading Workspace...</div>;
   }
 

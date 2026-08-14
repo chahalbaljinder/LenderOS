@@ -23,3 +23,13 @@ app.listen(port, (err) => {
 
   logger.info({ port }, "Server listening");
 });
+
+process.on("unhandledRejection", (reason, promise) => {
+  logger.error({ err: reason }, "Unhandled Rejection at:", promise);
+  process.exit(1);
+});
+
+process.on("uncaughtException", (err) => {
+  logger.error({ err }, "Uncaught Exception");
+  process.exit(1);
+});

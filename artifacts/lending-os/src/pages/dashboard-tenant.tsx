@@ -1,6 +1,6 @@
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { StatCard } from "@/components/ui/stat-card";
-import { useGetTenantDashboard, useGetMe } from "@workspace/api-client-react";
+import { useGetTenantDashboard } from "@workspace/api-client-react";
 import { FileText, CheckCircle, RefreshCcw, Wallet, ChevronLeft, ChevronRight } from "lucide-react";
 import {
   ChartContainer,
@@ -12,8 +12,7 @@ import {
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
 import { useState } from "react";
 
-export default function TenantDashboard() {
-  const { data: user } = useGetMe();
+export default function TenantDashboard({ user }: { user: any }) {
   const tenantId = user?.tenantId;
   const { data: dashboard, isLoading } = useGetTenantDashboard({ period: "30d" });
   const [period, setPeriod] = useState("30d");
@@ -38,7 +37,7 @@ export default function TenantDashboard() {
   ];
 
   return (
-    <DashboardLayout activeTab="dashboard">
+    <DashboardLayout activeTab="dashboard" user={user}>
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-end mb-8">
           <div>
