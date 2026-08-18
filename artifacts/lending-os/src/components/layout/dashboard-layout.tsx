@@ -23,13 +23,18 @@ export function DashboardLayout({
   user?: any;
 }) {
   const { isLoaded, isSignedIn } = useAuth();
-  const { data: userFromHook, isLoading } = useGetMe();
+  const { data: userFromHook, isLoading, isError } = useGetMe();
 
   const user = userProp ?? userFromHook;
 
   // Wait for Clerk to load session before rendering
   if (!isLoaded || !isSignedIn) {
     return <div className="flex min-h-screen items-center justify-center font-mono text-primary animate-pulse">Loading session...</div>;
+  }
+
+  // If there's an auth error, don't render the layout
+  if (isError && !userProp) {
+    return <div className="flex min-h-screen items-center justify-center font-mono text-primary animate-pulse">Session expired, redirecting...</div>;
   }
 
   if (isLoading && !userProp) {

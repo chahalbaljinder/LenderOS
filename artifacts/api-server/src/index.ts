@@ -15,14 +15,32 @@ if (Number.isNaN(port) || port <= 0) {
   throw new Error(`Invalid PORT value: "${rawPort}"`);
 }
 
-app.listen(port, (err) => {
+console.log(`Attempting to listen on port ${port}...`);
+const server = app.listen(port, (err) => {
   if (err) {
+    console.error("Error listening on port:", err);
     logger.error({ err }, "Error listening on port");
     process.exit(1);
   }
 
+  console.log(`Server listening on port ${port}`);
   logger.info({ port }, "Server listening");
 });
+
+server.on('listening', () => {
+  console.log('Server "listening" event fired');
+  const addr = server.address();
+  console.log('Server address:', addr);
+});
+
+server.on('error', (err) => {
+  console.error('Server error:', err);
+});
+
+console.log('Server setup complete, waiting for connections...');
+
+// Prevent process from exiting
+setInterval(() => {}, 1000);
 
 process.on("unhandledRejection", (reason, promise) => {
   logger.error({ err: reason }, "Unhandled Rejection at:", promise);

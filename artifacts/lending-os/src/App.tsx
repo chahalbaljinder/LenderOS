@@ -308,11 +308,39 @@ function ClerkQueryClientCacheInvalidatorInternal() {
 }
 
 function ClerkAuthTokenRegistrar() {
-  const { getToken } = useAuth();
+  const { getToken, isLoaded, isSignedIn } = useAuth();
+  const tokenRef = useRef<string | null>(null);
 
   useEffect(() => {
-    setAuthTokenGetter(() => getToken());
-  }, [getToken]);
+    if (!isLoaded || !isSignedIn) {
+      tokenRef.current = null;
+      setAuthTokenGetter(() => null);
+      return;
+    }
+
+    let cancelled = false;
+
+    const updateToken = async () => {
+      try {
+        const token = await getToken();
+        if (!cancelled) {
+          tokenRef.current = token;
+          setAuthTokenGetter(() => tokenRef.current);
+        }
+      } catch {
+        if (!cancelled) {
+          tokenRef.current = null;
+          setAuthTokenGetter(() => null);
+        }
+      }
+    };
+
+    updateToken();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [getToken, isLoaded, isSignedIn]);
 
   return null;
 }
@@ -478,7 +506,7 @@ function AcceptInvitationPage() {
 
 function DashboardRoute() {
   const { isLoaded, isSignedIn } = useAuth();
-  const { data: user, isLoading } = useGetMe();
+  const { data: user, isLoading, isError } = useGetMe();
 
   // Wait for Clerk to load session before making API call
   if (!isLoaded) {
@@ -488,6 +516,11 @@ function DashboardRoute() {
   // If not signed in, redirect to sign-in
   if (!isSignedIn) {
     return <div className="flex min-h-screen items-center justify-center font-mono text-primary animate-pulse">Redirecting to sign in...</div>;
+  }
+
+  // If there's an auth error (e.g., 401), redirect to sign-in
+  if (isError) {
+    return <div className="flex min-h-screen items-center justify-center font-mono text-primary animate-pulse">Session expired, redirecting...</div>;
   }
 
   if (isLoading) return <div className="flex min-h-screen items-center justify-center font-mono text-primary animate-pulse">Loading Workspace...</div>;
