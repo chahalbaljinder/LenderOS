@@ -23,6 +23,7 @@ import NewApplicationPage from "@/pages/applications/new";
 import ApplicationDetailPage from "@/pages/applications/detail";
 import CustomersList from "@/pages/customers/list";
 import NewCustomerPage from "@/pages/customers/new";
+import CustomerDetailPage from "@/pages/customers/detail";
 import LoansList from "@/pages/loans/list";
 import LoanDetailPage from "@/pages/loans/detail";
 import CollectionsList from "@/pages/collections/list";
@@ -544,6 +545,7 @@ function AppRoutes() {
         <Route path="/applications/:applicationId" component={ApplicationDetailPage} />
         <Route path="/applications" component={ApplicationsList} />
         <Route path="/customers/new" component={NewCustomerPage} />
+        <Route path="/customers/:customerId" component={CustomerDetailPage} />
         <Route path="/customers" component={CustomersList} />
         <Route path="/offers/:applicationId" component={OffersList} />
         <Route path="/loans/:loanId" component={LoanDetailPage} />
