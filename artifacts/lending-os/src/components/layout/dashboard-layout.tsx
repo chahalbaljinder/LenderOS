@@ -209,7 +209,7 @@ export function DashboardLayout({
     <div className="min-h-screen bg-background flex flex-col md:flex-row font-sans">
       <Sidebar navigation={navigation} activeTab={activeTab} user={user} />
       <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-        <Header user={user} />
+        <Header user={user} isClerkConfigured={isClerkConfigured} />
         <main className="flex-1 overflow-y-auto p-6">{children}</main>
       </div>
     </div>
@@ -331,7 +331,7 @@ function DemoRoleSwitcher() {
   );
 }
 
-function Header({ user }: { user: any }) {
+function Header({ user, isClerkConfigured }: { user: any; isClerkConfigured: boolean }) {
   const [, setLocation] = useLocation();
   const { signOut } = useClerk();
 
