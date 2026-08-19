@@ -35,7 +35,7 @@ import NewProductPage from "@/pages/products/new";
 import ProductDetailPage from "@/pages/products/detail";
 import EditProductPage from "@/pages/products/edit";
 import AuditList from "@/pages/audit/list";
-import SettingsPage from "@/pages/settings";
+import ApiKeysPage from "@/pages/settings/api-keys";
 import CustomerApply from "@/pages/apply";
 import NotFound from "@/pages/not-found";
 import OffersList from "@/pages/offers/list";
@@ -561,6 +561,7 @@ function AppRoutes() {
         <Route path="/products/:productId" component={ProductDetailPage} />
         <Route path="/products/*" component={ProductsList} />
         <Route path="/audit/*" component={AuditList} />
+        <Route path="/settings/api-keys" component={ApiKeysPage} />
         <Route path="/settings/*" component={SettingsPage} />
         <Route path="/invitations" component={InvitationsList} />
         <Route path="/platform/analytics" component={PlatformAnalyticsPage} />
