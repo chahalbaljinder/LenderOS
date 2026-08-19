@@ -165,7 +165,14 @@ export function DashboardLayout({
 }) {
   const { isLoaded, isSignedIn } = useAuth();
   const { data: userFromHook, isLoading, isError } = useGetMe();
-  const isClerkConfigured = Boolean(clerkPubKey);
+
+  // Mirror the same check used in App.tsx — avoids calling useClerk() outside <ClerkProvider>.
+  const _rawKey = (import.meta as any).env?.VITE_CLERK_PUBLISHABLE_KEY ?? "";
+  const isClerkConfigured =
+    Boolean(_rawKey) &&
+    _rawKey !== "pk_test_your_key_here" &&
+    !_rawKey.includes("your_key_here") &&
+    _rawKey.startsWith("pk_");
 
   const user = userProp ?? userFromHook;
 
