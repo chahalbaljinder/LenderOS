@@ -1,7 +1,8 @@
+import { useState } from "react";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
-import { useGetLoanApplication, useGetKycStatus, useGetRiskScore, useListLoanApplications, useUpdateLoanApplication } from "@workspace/api-client-react";
+import { useGetLoanApplication, useGetKycStatus, useGetRiskScore, useListLoanApplications, useUpdateLoanApplication, useApproveLoanApplication, useRejectLoanApplication, useDisburseLoan, useSubmitLoanApplication } from "@workspace/api-client-react";
 import { useParams, Link, useLocation } from "wouter";
-import { ArrowLeft, CreditCard, Shield, Loader2, AlertCircle, CheckCircle, MoreHorizontal, FileText, User, Calendar, Clock, TrendingUp, Download, Eye, Edit } from "lucide-react";
+import { ArrowLeft, CreditCard, Shield, Loader2, AlertCircle, CheckCircle, MoreHorizontal, FileText, User, Calendar, Clock, TrendingUp, Download, Eye, Edit, XCircle, Banknote, RotateCcw } from "lucide-react";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { DataTable } from "@/components/ui/data-table";
 import { cn } from "@/lib/utils";
@@ -12,10 +13,19 @@ export default function ApplicationDetailPage() {
   const [, setLocation] = useLocation();
   const applicationId = params.applicationId;
 
+  const [showRejectModal, setShowRejectModal] = useState(false);
+  const [showDisburseModal, setShowDisburseModal] = useState(false);
+  const [rejectReason, setRejectReason] = useState("");
+  const [disburseForm, setDisburseForm] = useState({ bankAccount: "", ifscCode: "", disbursementMode: "neft" });
+
   const { data: app, isLoading: appLoading } = useGetLoanApplication({ path: { applicationId: applicationId || "" } });
   const { data: kyc } = useGetKycStatus({ path: { applicationId: applicationId || "" } });
   const { data: risk } = useGetRiskScore({ path: { applicationId: applicationId || "" } });
   const updateMutation = useUpdateLoanApplication();
+  const submitMutation = useSubmitLoanApplication();
+  const approveMutation = useApproveLoanApplication();
+  const rejectMutation = useRejectLoanApplication();
+  const disburseMutation = useDisburseLoan();
 
   if (appLoading) {
     return (
@@ -268,63 +278,206 @@ export default function ApplicationDetailPage() {
             </div>
           </div>
 
-          {/* Right Column - Actions */}
-          <div className="space-y-4">
-            <div className="bg-card border border-border rounded-lg p-6 sticky top-24">
-              <h2 className="text-lg font-semibold text-white mb-4">Actions</h2>
-              <div className="space-y-3">
-                {app.status === "draft" && (
-                  <button className="w-full px-4 py-2 bg-primary hover:bg-primary/90 text-black font-semibold font-mono text-sm rounded transition-colors">
-                    Submit for Review
-                  </button>
-                )}
-                {["submitted", "under_review", "kyc_pending", "kyc_verified"].includes(app.status) && (
-                  <>
-                    <button className="w-full px-4 py-2 bg-primary hover:bg-primary/90 text-black font-semibold font-mono text-sm rounded transition-colors">
-                      Approve
+{/* Right Column - Actions */}
+            <div className="space-y-4">
+              <div className="bg-card border border-border rounded-lg p-6 sticky top-24">
+                <h2 className="text-lg font-semibold text-white mb-4">Actions</h2>
+                <div className="space-y-3">
+                  {app.status === "draft" && (
+                    <button
+                      onClick={() => submitMutation.mutate({ applicationId: applicationId || "" })}
+                      disabled={submitMutation.isPending}
+                      className="w-full px-4 py-2 bg-primary hover:bg-primary/90 text-black font-semibold font-mono text-sm rounded transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                    >
+                      {submitMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <RotateCcw className="w-4 h-4" />}
+                      Submit for Review
                     </button>
-                    <button className="w-full px-4 py-2 border border-zinc-700 text-zinc-300 hover:bg-white/5 font-semibold font-mono text-sm rounded transition-colors">
-                      Reject
+                  )}
+                  {["submitted", "under_review", "kyc_pending", "kyc_verified"].includes(app.status) && (
+                    <>
+                      <button
+                        onClick={() => {
+                          if (confirm("Approve this application?")) {
+                            approveMutation.mutate({
+                              applicationId: applicationId || "",
+                              approvedAmount: app.requestedAmount || 0,
+                              approvedTenure: app.requestedTenure || 12,
+                              approvedRate: 13.5,
+                            });
+                          }
+                        }}
+                        disabled={approveMutation.isPending}
+                        className="w-full px-4 py-2 bg-primary hover:bg-primary/90 text-black font-semibold font-mono text-sm rounded transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                      >
+                        {approveMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
+                        Approve
+                      </button>
+                      <button
+                        onClick={() => setShowRejectModal(true)}
+                        disabled={rejectMutation.isPending}
+                        className="w-full px-4 py-2 border border-zinc-700 text-zinc-300 hover:bg-white/5 font-semibold font-mono text-sm rounded transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                      >
+                        {rejectMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4" />}
+                        Reject
+                      </button>
+                    </>
+                  )}
+                  {app.status === "approved" && (
+                    <button
+                      onClick={() => setShowDisburseModal(true)}
+                      disabled={disburseMutation.isPending}
+                      className="w-full px-4 py-2 bg-green-500 hover:bg-green-500/90 text-white font-semibold font-mono text-sm rounded transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                    >
+                      {disburseMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Banknote className="w-4 h-4" />}
+                      Disburse
                     </button>
-                  </>
-                )}
-                {app.status === "approved" && (
-                  <button className="w-full px-4 py-2 bg-green-500 hover:bg-green-500/90 text-white font-semibold font-mono text-sm rounded transition-colors">
-                    Disburse
-                  </button>
-                )}
-                {["approved", "disbursed"].includes(app.status) && (
-                  <Link href={`/applications/${applicationId}/edit`} className="w-full px-4 py-2 border border-zinc-700 text-zinc-300 hover:bg-white/5 font-semibold font-mono text-sm rounded transition-colors text-center block">
-                    Edit Application
-                  </Link>
-                )}
+                  )}
+                  {["approved", "disbursed"].includes(app.status) && (
+                    <Link href={`/applications/${applicationId}/edit`} className="w-full px-4 py-2 border border-zinc-700 text-zinc-300 hover:bg-white/5 font-semibold font-mono text-sm rounded transition-colors text-center block flex items-center justify-center gap-2">
+                      <Edit className="w-4 h-4" />
+                      Edit Application
+                    </Link>
+                  )}
+                </div>
+              </div>
+
+              <div className="bg-card border border-border rounded-lg p-6 sticky top-24">
+                <h2 className="text-lg font-semibold text-white mb-4">Quick Info</h2>
+                <div className="space-y-3 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-zinc-400 font-mono">Status</span>
+                    <span className="font-medium text-white">{app.status.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase())}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-zinc-400 font-mono">Risk Grade</span>
+                    <span className={cn("font-bold px-2 py-0.5 rounded text-xs", riskGradeColors[risk?.grade] || "bg-gray-500/10 text-gray-400")}>
+                      {risk?.grade || "PENDING"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-zinc-400 font-mono">Created</span>
+                    <span className="font-mono text-white">{format(new Date(app.createdAt), "MMM d, yyyy")}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-zinc-400 font-mono">Updated</span>
+                    <span className="font-mono text-white">{format(new Date(app.updatedAt), "MMM d, yyyy")}</span>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div className="bg-card border border-border rounded-lg p-6 sticky top-24">
-              <h2 className="text-lg font-semibold text-white mb-4">Quick Info</h2>
-              <div className="space-y-3 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-zinc-400 font-mono">Status</span>
-                  <span className="font-medium text-white">{app.status.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase())}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-zinc-400 font-mono">Risk Grade</span>
-                  <span className={cn("font-bold px-2 py-0.5 rounded text-xs", riskGradeColors[risk?.grade] || "bg-gray-500/10 text-gray-400")}>
-                    {risk?.grade || "PENDING"}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-zinc-400 font-mono">Created</span>
-                  <span className="font-mono text-white">{format(new Date(app.createdAt), "MMM d, yyyy")}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-zinc-400 font-mono">Updated</span>
-                  <span className="font-mono text-white">{format(new Date(app.updatedAt), "MMM d, yyyy")}</span>
+            {/* Reject Modal */}
+            {showRejectModal && (
+              <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+                <div className="bg-[#09090b] border border-[#1e1e24] rounded-lg p-6 w-full max-w-md">
+                  <h3 className="text-lg font-bold font-mono tracking-tight mb-4">Reject Application</h3>
+                  <p className="text-sm text-zinc-400 mb-4">Please provide a reason for rejection.</p>
+                  <textarea
+                    value={rejectReason}
+                    onChange={(e) => setRejectReason(e.target.value)}
+                    rows={4}
+                    className="w-full bg-zinc-800 border-zinc-700 text-white rounded px-3 py-2 font-mono focus:ring-1 focus:ring-primary focus:border-primary resize-none mb-4"
+                    placeholder="Rejection reason..."
+                    required
+                  />
+                  <div className="flex justify-end gap-3">
+                    <button
+                      onClick={() => { setShowRejectModal(false); setRejectReason(""); }}
+                      className="px-4 py-2 border border-zinc-700 text-zinc-300 hover:bg-white/5 font-mono text-sm rounded transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (rejectReason.trim()) {
+                          rejectMutation.mutate({ applicationId: applicationId || "", reason: rejectReason });
+                          setShowRejectModal(false);
+                          setRejectReason("");
+                        }
+                      }}
+                      disabled={rejectMutation.isPending || !rejectReason.trim()}
+                      className="px-4 py-2 bg-red-500 hover:bg-red-500/90 text-white font-semibold font-mono text-sm rounded transition-colors disabled:opacity-50"
+                    >
+                      {rejectMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Reject Application"}
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
+            )}
+
+            {/* Disburse Modal */}
+            {showDisburseModal && (
+              <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+                <div className="bg-[#09090b] border border-[#1e1e24] rounded-lg p-6 w-full max-w-md">
+                  <h3 className="text-lg font-bold font-mono tracking-tight mb-4 flex items-center gap-2">
+                    <Banknote className="w-5 h-5" /> Disburse Loan
+                  </h3>
+                  <p className="text-sm text-zinc-400 mb-4">Enter bank details for disbursement.</p>
+                  <div className="space-y-4 mb-6">
+                    <div>
+                      <label className="block text-xs font-mono text-zinc-400 mb-1">Bank Account Number</label>
+                      <input
+                        type="text"
+                        value={disburseForm.bankAccount}
+                        onChange={(e) => setDisburseForm({ ...disburseForm, bankAccount: e.target.value })}
+                        className="w-full bg-zinc-800 border-zinc-700 text-white rounded px-3 py-2 font-mono focus:ring-1 focus:ring-primary focus:border-primary"
+                        placeholder="1234567890"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-mono text-zinc-400 mb-1">IFSC Code</label>
+                      <input
+                        type="text"
+                        value={disburseForm.ifscCode}
+                        onChange={(e) => setDisburseForm({ ...disburseForm, ifscCode: e.target.value })}
+                        className="w-full bg-zinc-800 border-zinc-700 text-white rounded px-3 py-2 font-mono focus:ring-1 focus:ring-primary focus:border-primary"
+                        placeholder="HDFC0001234"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-mono text-zinc-400 mb-1">Disbursement Mode</label>
+                      <select
+                        value={disburseForm.disbursementMode}
+                        onChange={(e) => setDisburseForm({ ...disburseForm, disbursementMode: e.target.value })}
+                        className="w-full bg-zinc-800 border-zinc-700 text-white rounded px-3 py-2 font-mono focus:ring-1 focus:ring-primary focus:border-primary"
+                      >
+                        <option value="neft">NEFT</option>
+                        <option value="imps">IMPS</option>
+                        <option value="upi">UPI</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="flex justify-end gap-3">
+                    <button
+                      onClick={() => { setShowDisburseModal(false); setDisburseForm({ bankAccount: "", ifscCode: "", disbursementMode: "neft" }); }}
+                      className="px-4 py-2 border border-zinc-700 text-zinc-300 hover:bg-white/5 font-mono text-sm rounded transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (disburseForm.bankAccount && disburseForm.ifscCode) {
+                          disburseMutation.mutate({
+                            applicationId: applicationId || "",
+                            bankAccount: disburseForm.bankAccount,
+                            ifscCode: disburseForm.ifscCode,
+                            disbursementMode: disburseForm.disbursementMode,
+                          });
+                          setShowDisburseModal(false);
+                          setDisburseForm({ bankAccount: "", ifscCode: "", disbursementMode: "neft" });
+                        }
+                      }}
+                      disabled={disburseMutation.isPending || !disburseForm.bankAccount || !disburseForm.ifscCode}
+                      className="px-4 py-2 bg-green-500 hover:bg-green-500/90 text-white font-semibold font-mono text-sm rounded transition-colors disabled:opacity-50"
+                    >
+                      {disburseMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Disburse Now"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
         </div>
       </div>
     </DashboardLayout>
