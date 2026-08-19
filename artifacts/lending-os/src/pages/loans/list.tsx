@@ -3,11 +3,12 @@ import { DataTable } from "@/components/ui/data-table";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useListLoans } from "@workspace/api-client-react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { Plus, Search, Filter, CreditCard, DollarSign, Calendar, MoreHorizontal, TrendingUp, TrendingDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function LoansList() {
+  const [, setLocation] = useLocation();
   const { data: loansRes, isLoading } = useListLoans();
 
   const columns: import("@/components/ui/data-table").Column<any>[] = [
@@ -95,11 +96,6 @@ export default function LoansList() {
             <h1 className="text-2xl font-semibold text-white mb-2">Active Loans</h1>
             <p className="font-mono text-sm text-zinc-400">Manage disbursed loans and repayment schedules.</p>
           </div>
-          <div className="flex gap-2">
-            <Link href="/loans/new" className="px-4 py-2 bg-white text-black hover:bg-zinc-200 font-semibold font-mono text-sm flex items-center gap-2 transition-colors">
-              <Plus className="w-4 h-4" /> New Loan
-            </Link>
-          </div>
         </div>
 
         <div className="mb-6 grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -144,7 +140,7 @@ export default function LoansList() {
               onPageChange: () => {},
               pageSizeOptions: [10, 25, 50, 100],
             }}
-            onRowClick={(row) => {}}
+            onRowClick={(row) => setLocation(`/loans/${row.id}`)}
             ariaLabel="Active loans table"
           />
         )}
