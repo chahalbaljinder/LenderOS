@@ -112,6 +112,8 @@ Build the identity provisioning layer: invitations, Clerk webhooks, and customer
 
 ## M2 — ROUTING & NAVIGATION
 
+**Status:** COMPLETE
+
 ### Objective
 Make navigation truthful.
 
@@ -292,4 +294,5 @@ All critical personas can complete their required workflows end-to-end.
 | 2026-08-15 | M0 | COMPLETE | Baseline verified, AI baseline created |
 | 2026-08-15 | M1 | COMPLETE | Clerk auth transport fixed: bearer token verification, login redirect, logout, session race condition |
 | 2026-08-19 | M1b | COMPLETE | Identity provisioning: invitations, Clerk webhook, customer.clerkId, frontend invitations page, OpenAPI spec, demo seeds |
-| 2026-08-19 | M2 | ACTIVE | Routing & Navigation - fix missing routes, placeholders, wildcards |
+| 2026-08-19 | M2 | COMPLETE | Routing & Navigation - replaced placeholders with real pages (tenants, applications, platform analytics, customers), removed invalid loans/new route |
+| 2026-08-19 | M3 | ACTIVE | Application Review - turn application API into usable NBFC workflow (detail, KYC, financial, risk, approve/reject) |

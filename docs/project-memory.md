@@ -36,6 +36,13 @@ and run digital lending operations with full tenant data isolation.
   - Sidebar navigation for tenant admins & super admins
   - OpenAPI spec + Orval codegen for all invitation/webhook endpoints
   - Demo invitation seeds for NBFC admin & Risk Manager onboarding
+- **Routing & Navigation (M2)** — All placeholder pages replaced with real implementations
+  - `/tenants/new` — Create tenant with validation
+  - `/tenants/:tenantId` — Tenant detail with stats, products, recent applications
+  - `/applications/new` — Create loan application with customer/product selection
+  - `/applications/:applicationId` — Application detail with financial, KYC, risk, timeline, actions
+  - `/platform/analytics` — Stat cards, top tenants, loan funnel, collection rate, revenue trend
+  - `/customers/new` — Create customer with full KYC fields
 
 ### 🚧 In Progress / Planned
 - API versioning (`/api/v1/`)

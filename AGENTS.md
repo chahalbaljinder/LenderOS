@@ -204,12 +204,12 @@ Attach: req.clerkId, req.userRole, req.user
 | Workflow | Current State | Missing for Production |
 |----------|---------------|------------------------|
 | **Customer Onboarding** | `/apply` flow exists | Full KYC upload/verify, document management, e-sign |
-| **Application Lifecycle** | Submit → dashboard | Review UI, approval/rejection actions, offer generation, acceptance, disbursement |
+| **Application Lifecycle** | **Submit → dashboard → review UI (M2)** | Approval/rejection actions, offer generation, acceptance, disbursement |
 | **Loan Management** | List view | Schedule, repayment recording, closure, restructuring |
 | **Collections** | DPD table + priority | Agent actions, promise-to-pay, legal escalation, recovery tracking |
 | **User/Role Management** | **Invitation flow implemented (M1b)** | CRUD, role assignment per tenant |
 | **Notifications** | None | Email/SMS/webhook for status changes, due dates, approvals |
-| **Reporting/Analytics** | Basic mock charts | Real portfolio metrics, regulatory reports, audit trails |
+| **Reporting/Analytics** | **Real platform analytics (M2)** | Real portfolio metrics, regulatory reports, audit trails |
 
 **Only implement what's supported by existing data model.** Don't invent financial rules.
 
