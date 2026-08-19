@@ -1125,6 +1125,142 @@ export interface AuditLogListResponse {
   limit: number;
 }
 
+export type InvitationRole = typeof InvitationRole[keyof typeof InvitationRole];
+
+
+export const InvitationRole = {
+  super_admin: 'super_admin',
+  platform_admin: 'platform_admin',
+  tenant_owner: 'tenant_owner',
+  tenant_admin: 'tenant_admin',
+  risk_manager: 'risk_manager',
+  loan_manager: 'loan_manager',
+  collection_manager: 'collection_manager',
+  customer_support: 'customer_support',
+  sales_agent: 'sales_agent',
+  dsa: 'dsa',
+  relationship_manager: 'relationship_manager',
+  customer: 'customer',
+  auditor: 'auditor',
+  compliance_officer: 'compliance_officer',
+} as const;
+
+export type InvitationStatus = typeof InvitationStatus[keyof typeof InvitationStatus];
+
+
+export const InvitationStatus = {
+  invited: 'invited',
+  pending: 'pending',
+  accepted: 'accepted',
+  provisioned: 'provisioned',
+  active: 'active',
+  expired: 'expired',
+  cancelled: 'cancelled',
+  revoked: 'revoked',
+} as const;
+
+/**
+ * @nullable
+ */
+export type InvitationMetadata = { [key: string]: unknown } | null;
+
+export interface Invitation {
+  id: string;
+  email: string;
+  tenantId: string;
+  role: InvitationRole;
+  invitedBy: string;
+  status: InvitationStatus;
+  token: string;
+  expiresAt: string;
+  /** @nullable */
+  acceptedAt?: string | null;
+  /** @nullable */
+  provisionedAt?: string | null;
+  /** @nullable */
+  clerkUserId?: string | null;
+  /** @nullable */
+  metadata?: InvitationMetadata;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type InvitationInputRole = typeof InvitationInputRole[keyof typeof InvitationInputRole];
+
+
+export const InvitationInputRole = {
+  tenant_owner: 'tenant_owner',
+  tenant_admin: 'tenant_admin',
+  risk_manager: 'risk_manager',
+  loan_manager: 'loan_manager',
+  collection_manager: 'collection_manager',
+  customer_support: 'customer_support',
+  sales_agent: 'sales_agent',
+  dsa: 'dsa',
+  relationship_manager: 'relationship_manager',
+} as const;
+
+export type InvitationInputMetadata = { [key: string]: unknown };
+
+export interface InvitationInput {
+  email: string;
+  role: InvitationInputRole;
+  tenantId: string;
+  metadata?: InvitationInputMetadata;
+}
+
+export type InvitationUpdateRole = typeof InvitationUpdateRole[keyof typeof InvitationUpdateRole];
+
+
+export const InvitationUpdateRole = {
+  tenant_owner: 'tenant_owner',
+  tenant_admin: 'tenant_admin',
+  risk_manager: 'risk_manager',
+  loan_manager: 'loan_manager',
+  collection_manager: 'collection_manager',
+  customer_support: 'customer_support',
+  sales_agent: 'sales_agent',
+  dsa: 'dsa',
+  relationship_manager: 'relationship_manager',
+} as const;
+
+export type InvitationUpdateMetadata = { [key: string]: unknown };
+
+export interface InvitationUpdate {
+  role?: InvitationUpdateRole;
+  metadata?: InvitationUpdateMetadata;
+}
+
+export interface InvitationListResponse {
+  data: Invitation[];
+}
+
+export interface InvitationResendResponse {
+  message: string;
+  acceptanceUrl: string;
+}
+
+export interface InvitationAcceptResponse {
+  message: string;
+  email: string;
+  tenantId: string;
+}
+
+export type WebhookResponseStatus = typeof WebhookResponseStatus[keyof typeof WebhookResponseStatus];
+
+
+export const WebhookResponseStatus = {
+  provisioned_from_invitation: 'provisioned_from_invitation',
+  linked_existing_customer: 'linked_existing_customer',
+  no_action_needed: 'no_action_needed',
+  user_deactivated: 'user_deactivated',
+  ignored: 'ignored',
+} as const;
+
+export interface WebhookResponse {
+  status: WebhookResponseStatus;
+}
+
 export interface ApiKey {
   id: string;
   name: string;
@@ -1371,5 +1507,25 @@ action?: string;
 userId?: string;
 page?: number;
 limit?: number;
+};
+
+export type ListInvitationsParams = {
+tenantId?: string;
+};
+
+export type ClerkWebhookBodyType = typeof ClerkWebhookBodyType[keyof typeof ClerkWebhookBodyType];
+
+
+export const ClerkWebhookBodyType = {
+  usercreated: 'user.created',
+  userupdated: 'user.updated',
+  userdeleted: 'user.deleted',
+} as const;
+
+export type ClerkWebhookBodyData = { [key: string]: unknown };
+
+export type ClerkWebhookBody = {
+  type?: ClerkWebhookBodyType;
+  data?: ClerkWebhookBodyData;
 };
 

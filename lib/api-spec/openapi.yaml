@@ -38,6 +38,10 @@ tags:
     description: Audit logs
   - name: settings
     description: Platform settings
+  - name: invitations
+    description: User invitation management
+  - name: webhooks
+    description: External webhook handlers
 
 paths:
   /healthz:
@@ -1221,6 +1225,227 @@ paths:
               schema:
                 $ref: "#/components/schemas/AuditLogListResponse"
 
+  # ─── INVITATIONS ────────────────────────────────────────────────────────────
+  /invitations:
+    post:
+      operationId: createInvitation
+      tags: [invitations]
+      summary: Create a new invitation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InvitationInput"
+      responses:
+        "201":
+          description: Invitation created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Invitation"
+        "400":
+          description: Bad request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "409":
+          description: Pending invitation already exists
+    get:
+      operationId: listInvitations
+      tags: [invitations]
+      summary: List invitations for the tenant
+      parameters:
+        - name: tenantId
+          in: query
+          schema: { type: string }
+      responses:
+        "200":
+          description: List of invitations
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InvitationListResponse"
+        "400":
+          description: Bad request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+
+  /invitations/{id}:
+    get:
+      operationId: getInvitation
+      tags: [invitations]
+      summary: Get invitation by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Invitation details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Invitation"
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not found
+    patch:
+      operationId: updateInvitation
+      tags: [invitations]
+      summary: Update invitation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InvitationUpdate"
+      responses:
+        "200":
+          description: Updated invitation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Invitation"
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not found
+
+  /invitations/{id}/resend:
+    post:
+      operationId: resendInvitation
+      tags: [invitations]
+      summary: Resend an invitation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Invitation resent
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InvitationResendResponse"
+        "400":
+          description: Bad request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not found
+
+  /invitations/{id}/cancel:
+    post:
+      operationId: cancelInvitation
+      tags: [invitations]
+      summary: Cancel a pending invitation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Invitation cancelled
+        "400":
+          description: Bad request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not found
+
+  /invitations/{id}/revoke:
+    post:
+      operationId: revokeInvitation
+      tags: [invitations]
+      summary: Revoke an active/provisioned invitation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Invitation revoked
+        "400":
+          description: Bad request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not found
+
+  /invitations/accept/{token}:
+    post:
+      operationId: acceptInvitation
+      tags: [invitations]
+      summary: Accept an invitation by token
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Invitation accepted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InvitationAcceptResponse"
+        "400":
+          description: Bad request (expired, invalid status)
+        "404":
+          description: Invalid token
+
+  # ─── WEBHOOKS ────────────────────────────────────────────────────────────────
+  /webhooks/clerk:
+    post:
+      operationId: clerkWebhook
+      tags: [webhooks]
+      summary: Clerk webhook endpoint for user lifecycle events
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type:
+                  type: string
+                  enum: [user.created, user.updated, user.deleted]
+                data:
+                  type: object
+      responses:
+        "200":
+          description: Webhook processed
+        "400":
+          description: Invalid payload
+        "401":
+          description: Invalid signature
+        "500":
+          description: Processing failed
+
   # ─── SETTINGS ───────────────────────────────────────────────────────────────
   /settings/tenant/{tenantId}:
     get:
@@ -2197,6 +2422,82 @@ components:
         total: { type: integer }
         page: { type: integer }
         limit: { type: integer }
+
+    # ── INVITATIONS ───────────────────────────────────────────────────────────────
+    Invitation:
+      type: object
+      required: [id, email, tenantId, role, invitedBy, status, token, expiresAt, createdAt, updatedAt]
+      properties:
+        id: { type: string }
+        email: { type: string }
+        tenantId: { type: string }
+        role:
+          type: string
+          enum: [super_admin, platform_admin, tenant_owner, tenant_admin, risk_manager, loan_manager, collection_manager, customer_support, sales_agent, dsa, relationship_manager, customer, auditor, compliance_officer]
+        invitedBy: { type: string }
+        status:
+          type: string
+          enum: [invited, pending, accepted, provisioned, active, expired, cancelled, revoked]
+        token: { type: string }
+        expiresAt: { type: string, format: date-time }
+        acceptedAt: { type: ["string", "null"], format: date-time }
+        provisionedAt: { type: ["string", "null"], format: date-time }
+        clerkUserId: { type: ["string", "null"] }
+        metadata: { type: ["object", "null"] }
+        createdAt: { type: string }
+        updatedAt: { type: string }
+
+    InvitationInput:
+      type: object
+      required: [email, role, tenantId]
+      properties:
+        email: { type: string }
+        role:
+          type: string
+          enum: [tenant_owner, tenant_admin, risk_manager, loan_manager, collection_manager, customer_support, sales_agent, dsa, relationship_manager]
+        tenantId: { type: string }
+        metadata: { type: object }
+
+    InvitationUpdate:
+      type: object
+      properties:
+        role:
+          type: string
+          enum: [tenant_owner, tenant_admin, risk_manager, loan_manager, collection_manager, customer_support, sales_agent, dsa, relationship_manager]
+        metadata: { type: object }
+
+    InvitationListResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Invitation"
+
+    InvitationResendResponse:
+      type: object
+      required: [message, acceptanceUrl]
+      properties:
+        message: { type: string }
+        acceptanceUrl: { type: string }
+
+    InvitationAcceptResponse:
+      type: object
+      required: [message, email, tenantId]
+      properties:
+        message: { type: string }
+        email: { type: string }
+        tenantId: { type: string }
+
+    # ── WEBHOOKS ────────────────────────────────────────────────────────────────
+    WebhookResponse:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [provisioned_from_invitation, linked_existing_customer, no_action_needed, user_deactivated, ignored]
 
     # ── API KEYS ──────────────────────────────────────────────────────────────
     ApiKey:

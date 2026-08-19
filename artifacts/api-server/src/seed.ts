@@ -13,6 +13,7 @@ import {
   kycRecordsTable,
   riskScoresTable,
   tenantSettingsTable,
+  invitationsTable,
 } from "@workspace/db";
 
 const id = (seed: string) => createHash("sha256").update(seed).digest("hex").slice(0, 32);
@@ -103,6 +104,17 @@ async function upsertKyc(input: any) {
     return existing[0].id;
   }
   const [inserted] = await db.insert(kycRecordsTable).values(input).returning();
+  return inserted.id;
+}
+
+async function upsertInvitation(input: any) {
+  const existing = await db.select().from(invitationsTable).where(eq(invitationsTable.token, input.token)).limit(1);
+  if (existing[0]) {
+    const { id, ...rest } = input;
+    await db.update(invitationsTable).set(rest).where(eq(invitationsTable.id, existing[0].id));
+    return existing[0].id;
+  }
+  const [inserted] = await db.insert(invitationsTable).values(input).returning();
   return inserted.id;
 }
 
@@ -540,6 +552,31 @@ async function seed() {
     assignedTo: u2,
     notes: "Customer contacted — promised payment by 10th",
   }).onConflictDoNothing();
+
+  // Demo invitations
+  await upsertInvitation({
+    id: id("invitation-nbfc-admin"),
+    email: "nbfc.admin@newtenant.in",
+    tenantId: tenant1Id,
+    role: "tenant_admin",
+    invitedBy: u1,
+    status: "pending",
+    token: "demo-invitation-nbfc-admin-token",
+    expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    metadata: { source: "demo", invitedByRole: "super_admin" },
+  });
+
+  await upsertInvitation({
+    id: id("invitation-risk-manager"),
+    email: "risk.manager@newtenant.in",
+    tenantId: tenant1Id,
+    role: "risk_manager",
+    invitedBy: u2,
+    status: "pending",
+    token: "demo-invitation-risk-manager-token",
+    expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    metadata: { source: "demo", invitedByRole: "tenant_admin" },
+  });
 
   console.log("Seed complete.");
   process.exit(0);

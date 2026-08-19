@@ -24,6 +24,7 @@ import SettingsPage from "@/pages/settings";
 import CustomerApply from "@/pages/apply";
 import NotFound from "@/pages/not-found";
 import PlaceholderPage from "@/pages/placeholder";
+import InvitationsList from "@/pages/invitations/list";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -554,6 +555,7 @@ function AppRoutes() {
         <Route path="/products/*" component={ProductsList} />
         <Route path="/audit/*" component={AuditList} />
         <Route path="/settings/*" component={SettingsPage} />
+        <Route path="/invitations" component={InvitationsList} />
         <Route path="/platform/analytics" component={PlatformAnalyticsPage} />
         <Route path="/apply" component={CustomerApply} />
         <Route path="/" component={HomeRedirect} />

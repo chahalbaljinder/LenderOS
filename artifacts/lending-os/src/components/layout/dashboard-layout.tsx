@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
-import { LogOut, Settings, Users, Activity, Wallet, Shield, Briefcase, FileText, ShieldCheck, UserCheck, ChevronDown } from "lucide-react";
+import { LogOut, Settings, Users, Activity, Wallet, Shield, Briefcase, FileText, ShieldCheck, UserCheck, ChevronDown, Mail } from "lucide-react";
 import { useGetMe } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useClerk, useAuth } from "@clerk/react";
@@ -77,6 +77,12 @@ function Sidebar({
       href: "/tenants",
     },
     {
+      id: "invitations",
+      label: "Invitations",
+      icon: <Mail className="w-4 h-4" />,
+      href: "/invitations",
+    },
+    {
       id: "analytics",
       label: "Global Analytics",
       icon: <Activity className="w-4 h-4" />,
@@ -132,6 +138,12 @@ function Sidebar({
       label: "Tenant Settings",
       icon: <Settings className="w-4 h-4" />,
       href: "/settings",
+    },
+    {
+      id: "invitations",
+      label: "Invitations",
+      icon: <Mail className="w-4 h-4" />,
+      href: "/invitations",
     },
   ];
 

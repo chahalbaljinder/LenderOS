@@ -1720,6 +1720,188 @@ export const ListAuditLogsResponse = zod.object({
 
 
 /**
+ * @summary Create a new invitation
+ */
+export const CreateInvitationBody = zod.object({
+  "email": zod.string(),
+  "role": zod.enum(['tenant_owner', 'tenant_admin', 'risk_manager', 'loan_manager', 'collection_manager', 'customer_support', 'sales_agent', 'dsa', 'relationship_manager']),
+  "tenantId": zod.string(),
+  "metadata": zod.looseObject({
+
+}).optional()
+})
+
+export const CreateInvitationResponse = zod.object({
+  "id": zod.string(),
+  "email": zod.string(),
+  "tenantId": zod.string(),
+  "role": zod.enum(['super_admin', 'platform_admin', 'tenant_owner', 'tenant_admin', 'risk_manager', 'loan_manager', 'collection_manager', 'customer_support', 'sales_agent', 'dsa', 'relationship_manager', 'customer', 'auditor', 'compliance_officer']),
+  "invitedBy": zod.string(),
+  "status": zod.enum(['invited', 'pending', 'accepted', 'provisioned', 'active', 'expired', 'cancelled', 'revoked']),
+  "token": zod.string(),
+  "expiresAt": zod.coerce.date(),
+  "acceptedAt": zod.coerce.date().nullish(),
+  "provisionedAt": zod.coerce.date().nullish(),
+  "clerkUserId": zod.string().nullish(),
+  "metadata": zod.looseObject({
+
+}).nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+})
+
+
+/**
+ * @summary List invitations for the tenant
+ */
+export const ListInvitationsQueryParams = zod.object({
+  "tenantId": zod.coerce.string().optional()
+})
+
+export const ListInvitationsResponse = zod.object({
+  "data": zod.array(zod.object({
+  "id": zod.string(),
+  "email": zod.string(),
+  "tenantId": zod.string(),
+  "role": zod.enum(['super_admin', 'platform_admin', 'tenant_owner', 'tenant_admin', 'risk_manager', 'loan_manager', 'collection_manager', 'customer_support', 'sales_agent', 'dsa', 'relationship_manager', 'customer', 'auditor', 'compliance_officer']),
+  "invitedBy": zod.string(),
+  "status": zod.enum(['invited', 'pending', 'accepted', 'provisioned', 'active', 'expired', 'cancelled', 'revoked']),
+  "token": zod.string(),
+  "expiresAt": zod.coerce.date(),
+  "acceptedAt": zod.coerce.date().nullish(),
+  "provisionedAt": zod.coerce.date().nullish(),
+  "clerkUserId": zod.string().nullish(),
+  "metadata": zod.looseObject({
+
+}).nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+}))
+})
+
+
+/**
+ * @summary Get invitation by ID
+ */
+export const GetInvitationParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const GetInvitationResponse = zod.object({
+  "id": zod.string(),
+  "email": zod.string(),
+  "tenantId": zod.string(),
+  "role": zod.enum(['super_admin', 'platform_admin', 'tenant_owner', 'tenant_admin', 'risk_manager', 'loan_manager', 'collection_manager', 'customer_support', 'sales_agent', 'dsa', 'relationship_manager', 'customer', 'auditor', 'compliance_officer']),
+  "invitedBy": zod.string(),
+  "status": zod.enum(['invited', 'pending', 'accepted', 'provisioned', 'active', 'expired', 'cancelled', 'revoked']),
+  "token": zod.string(),
+  "expiresAt": zod.coerce.date(),
+  "acceptedAt": zod.coerce.date().nullish(),
+  "provisionedAt": zod.coerce.date().nullish(),
+  "clerkUserId": zod.string().nullish(),
+  "metadata": zod.looseObject({
+
+}).nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+})
+
+
+/**
+ * @summary Update invitation
+ */
+export const UpdateInvitationParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const UpdateInvitationBody = zod.object({
+  "role": zod.enum(['tenant_owner', 'tenant_admin', 'risk_manager', 'loan_manager', 'collection_manager', 'customer_support', 'sales_agent', 'dsa', 'relationship_manager']).optional(),
+  "metadata": zod.looseObject({
+
+}).optional()
+})
+
+export const UpdateInvitationResponse = zod.object({
+  "id": zod.string(),
+  "email": zod.string(),
+  "tenantId": zod.string(),
+  "role": zod.enum(['super_admin', 'platform_admin', 'tenant_owner', 'tenant_admin', 'risk_manager', 'loan_manager', 'collection_manager', 'customer_support', 'sales_agent', 'dsa', 'relationship_manager', 'customer', 'auditor', 'compliance_officer']),
+  "invitedBy": zod.string(),
+  "status": zod.enum(['invited', 'pending', 'accepted', 'provisioned', 'active', 'expired', 'cancelled', 'revoked']),
+  "token": zod.string(),
+  "expiresAt": zod.coerce.date(),
+  "acceptedAt": zod.coerce.date().nullish(),
+  "provisionedAt": zod.coerce.date().nullish(),
+  "clerkUserId": zod.string().nullish(),
+  "metadata": zod.looseObject({
+
+}).nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+})
+
+
+/**
+ * @summary Resend an invitation
+ */
+export const ResendInvitationParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const ResendInvitationResponse = zod.object({
+  "message": zod.string(),
+  "acceptanceUrl": zod.string()
+})
+
+
+/**
+ * @summary Cancel a pending invitation
+ */
+export const CancelInvitationParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const CancelInvitationResponse = zod.unknown()
+
+
+/**
+ * @summary Revoke an active/provisioned invitation
+ */
+export const RevokeInvitationParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const RevokeInvitationResponse = zod.unknown()
+
+
+/**
+ * @summary Accept an invitation by token
+ */
+export const AcceptInvitationParams = zod.object({
+  "token": zod.coerce.string()
+})
+
+export const AcceptInvitationResponse = zod.object({
+  "message": zod.string(),
+  "email": zod.string(),
+  "tenantId": zod.string()
+})
+
+
+/**
+ * @summary Clerk webhook endpoint for user lifecycle events
+ */
+export const ClerkWebhookBody = zod.object({
+  "type": zod.enum(['user.created', 'user.updated', 'user.deleted']).optional(),
+  "data": zod.looseObject({
+
+}).optional()
+})
+
+export const ClerkWebhookResponse = zod.unknown()
+
+
+/**
  * @summary Get tenant settings and branding
  */
 export const GetTenantSettingsParams = zod.object({
