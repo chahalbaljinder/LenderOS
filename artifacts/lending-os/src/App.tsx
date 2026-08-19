@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, Component, type ReactNode } from "react";
+import { useState } from "react";
 import { ClerkProvider, SignIn, SignUp, useClerk, useAuth, useUser } from "@clerk/react";
 import { publishableKeyFromHost } from "@clerk/react/internal";
 import { shadcn } from "@clerk/themes";
@@ -28,6 +29,7 @@ import AuditList from "@/pages/audit/list";
 import SettingsPage from "@/pages/settings";
 import CustomerApply from "@/pages/apply";
 import NotFound from "@/pages/not-found";
+import OffersList from "@/pages/offers/list";
 import PlaceholderPage from "@/pages/placeholder";
 import InvitationsList from "@/pages/invitations/list";
 import PlatformAnalyticsPage from "@/pages/platform/analytics";
@@ -535,6 +537,7 @@ function AppRoutes() {
         <Route path="/applications" component={ApplicationsList} />
         <Route path="/customers/new" component={NewCustomerPage} />
         <Route path="/customers" component={CustomersList} />
+        <Route path="/offers/:applicationId" component={OffersList} />
         <Route path="/loans" component={LoansList} />
         <Route path="/collections" component={CollectionsList} />
         <Route path="/products/*" component={ProductsList} />
