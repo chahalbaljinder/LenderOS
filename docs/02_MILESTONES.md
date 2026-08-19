@@ -297,4 +297,5 @@ All critical personas can complete their required workflows end-to-end.
 | 2026-08-19 | M2 | COMPLETE | Routing & Navigation - replaced placeholders with real pages (tenants, applications, platform analytics, customers), removed invalid loans/new route |
 | 2026-08-19 | M3 | COMPLETE | Application Review - connected approve/reject/disburse actions to real API, added modals with forms |
 | 2026-08-19 | M4 | COMPLETE | Offer & Acceptance - borrower-facing offers page, EMI calculator, accept offer flow |
-| 2026-08-19 | M5 | ACTIVE | Disbursement & Loan - complete loan execution from approved application, loan creation, repayment schedule |
+| 2026-08-19 | M5 | COMPLETE | Disbursement & Loan - loan detail page, repayment schedule, payment history, loan actions |
+| 2026-08-19 | M6 | ACTIVE | Collections - make collection operations actionable (overdue accounts, agent actions, PTP, recovery tracking) |
