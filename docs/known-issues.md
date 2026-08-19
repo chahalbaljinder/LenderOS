@@ -412,3 +412,36 @@ Frontend/API auth transport mismatch:
 
 **Last Updated**: 2026-08-19
 **Next Review**: Before production deployment
+
+---
+
+## Issue #014: JSX Conditional Rendering Parse Error (RESOLVED 2026-08-19)
+
+### Problem
+Build fails with "Unterminated regular expression" error at `</DashboardLayout>` when using conditional rendering with `&&` operator for JSX elements in collections list page.
+
+### Reproduction
+1. Add conditional rendering `{condition && <Component />}` in collections list page
+2. Run `pnpm --filter @workspace/lending-os run build`
+3. Build fails with "Unterminated regular expression" at `</DashboardLayout>`
+
+### Impact
+- Build fails for collections page with performance dashboard
+- Parser confused by conditional JSX rendering
+
+### Root Cause
+esbuild parser confusion with conditional JSX rendering using `&&` operator inside grid container children array. The parser gets confused by the conditional expression and reports false positive "Unterminated regular expression" error at unrelated location.
+
+### Status
+**RESOLVED** — Fixed in commit c7a6195
+
+### Solution
+1. Move conditional trend chart rendering outside the grid container to separate sibling element
+2. Use ternary operator `condition ? <Component /> : null` instead of `condition && <Component />` for better parsing
+3. Ensure conditional JSX elements are properly wrapped and positioned in component tree
+
+### Related Files
+- `artifacts/lending-os/src/pages/collections/list.tsx`
+
+**Last Updated**: 2026-08-19
+**Next Review**: Before production deployment
