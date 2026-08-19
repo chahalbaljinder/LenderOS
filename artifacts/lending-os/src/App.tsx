@@ -14,8 +14,13 @@ import LandingPage from "@/pages/landing";
 import SuperAdminDashboard from "@/pages/dashboard-super";
 import TenantDashboard from "@/pages/dashboard-tenant";
 import TenantsList from "@/pages/tenants/list";
+import NewTenantPage from "@/pages/tenants/new";
+import TenantDetailPage from "@/pages/tenants/detail";
 import ApplicationsList from "@/pages/applications/list";
+import NewApplicationPage from "@/pages/applications/new";
+import ApplicationDetailPage from "@/pages/applications/detail";
 import CustomersList from "@/pages/customers/list";
+import NewCustomerPage from "@/pages/customers/new";
 import LoansList from "@/pages/loans/list";
 import CollectionsList from "@/pages/collections/list";
 import ProductsList from "@/pages/products/list";
@@ -25,6 +30,7 @@ import CustomerApply from "@/pages/apply";
 import NotFound from "@/pages/not-found";
 import PlaceholderPage from "@/pages/placeholder";
 import InvitationsList from "@/pages/invitations/list";
+import PlatformAnalyticsPage from "@/pages/platform/analytics";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -360,28 +366,6 @@ function ClerkHomeRedirect() {
 
 
 
-function PlatformAnalyticsPage() {
-  return <PlaceholderPage title="Platform Analytics" description="Cross-tenant performance and risk signals" activeTab="analytics" badge="Insights" />;
-}
-
-function NewApplicationPage() {
-  return <PlaceholderPage title="Create Application" description="Capture a new loan application request" activeTab="applications" badge="Create" />;
-}
-
-function ApplicationDetailPage() {
-  const params = useParams<{ applicationId: string }>();
-  return <PlaceholderPage title={`Application ${params.applicationId ?? "Details"}`} description="Review underwriting and customer context" activeTab="applications" badge="Review" />;
-}
-
-function NewTenantPage() {
-  return <PlaceholderPage title="Create Tenant" description="Add a new onboarding tenant to the platform" activeTab="tenants" badge="Onboarding" />;
-}
-
-function TenantDetailPage() {
-  const params = useParams<{ tenantId: string }>();
-  return <PlaceholderPage title={`Tenant ${params.tenantId ?? "Details"}`} description="Inspect tenant status, exposure, and controls" activeTab="tenants" badge="Detail" />;
-}
-
 function AcceptInvitationPage() {
   const params = useParams<{ token: string }>();
   const { isLoaded, isSignedIn } = useAuth();
@@ -549,6 +533,7 @@ function AppRoutes() {
         <Route path="/applications/new" component={NewApplicationPage} />
         <Route path="/applications/:applicationId" component={ApplicationDetailPage} />
         <Route path="/applications" component={ApplicationsList} />
+        <Route path="/customers/new" component={NewCustomerPage} />
         <Route path="/customers" component={CustomersList} />
         <Route path="/loans" component={LoansList} />
         <Route path="/collections" component={CollectionsList} />
