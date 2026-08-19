@@ -3,10 +3,12 @@ import { DataTable } from "@/components/ui/data-table";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useListCollections } from "@workspace/api-client-react";
+import { Link, useLocation } from "wouter";
 import { ShieldAlert, AlertTriangle, ArrowRight, MoreHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function CollectionsList() {
+  const [, setLocation] = useLocation();
   const { data: collectionsRes, isLoading } = useListCollections();
 
   const columns: import("@/components/ui/data-table").Column<any>[] = [
@@ -155,6 +157,7 @@ export default function CollectionsList() {
                 onClick: (row) => {},
               },
             ]}
+            onRowClick={(row) => setLocation(`/collections/${row.id}`)}
             ariaLabel="Collections queue table"
           />
         )}
