@@ -516,7 +516,7 @@ function DashboardRoute() {
     return <div className="flex min-h-screen items-center justify-center font-mono text-primary animate-pulse">Loading session...</div>;
   }
 
-  // If Clerk is not configured (demo mode), use demo auth
+  // If Clerk is not configured (demo mode), use demo auth - skip Clerk auth checks
   if (!isClerkConfigured) {
     if (isError) {
       return <div className="flex min-h-screen items-center justify-center font-mono text-primary animate-pulse">Session expired, redirecting...</div>;
