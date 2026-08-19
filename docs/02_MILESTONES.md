@@ -300,6 +300,6 @@ All critical personas can complete their required workflows end-to-end.
 | 2026-08-19 | M5 | COMPLETE | Disbursement & Loan - loan detail page, repayment schedule, payment history, loan actions |
 | 2026-08-19 | M6 | COMPLETE | Collections - detail page, agent actions (contact, PTP, follow-up, escalate, resolve), AI priority scoring, performance dashboard with trend chart |
 | 2026-08-19 | M7 | COMPLETE | Role-Aware UX - role-based navigation for all 15 roles (super_admin, platform_admin, tenant_owner, tenant_admin, risk_manager, loan_manager, collection_manager, customer_support, sales_agent, dsa, relationship_manager, customer, auditor, compliance_officer) |
-| 2026-08-19 | M8 | ACTIVE | Tenant Operations - tenant users, roles, organization settings, loan products, operational reporting |
+| 2026-08-19 | M8 | COMPLETE | Tenant Operations - loan products CRUD, tenant users, tenant analytics, tenant settings API |
 | 2026-08-19 | M7 | COMPLETE | Role-Aware UX - role-based navigation for all 15 roles (super_admin, platform_admin, tenant_owner, tenant_admin, risk_manager, loan_manager, collection_manager, customer_support, sales_agent, dsa, relationship_manager, customer, auditor, compliance_officer) |
-| 2026-08-19 | M8 | ACTIVE | Tenant Operations - tenant users, roles, organization settings, loan products, operational reporting |
+| 2026-08-19 | M8 | COMPLETE | Tenant Operations - loan products CRUD, tenant users, tenant analytics, tenant settings API |

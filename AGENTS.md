@@ -205,11 +205,11 @@ Attach: req.clerkId, req.userRole, req.user
 |----------|---------------|------------------------|
 | **Customer Onboarding** | `/apply` flow exists | Full KYC upload/verify, document management, e-sign |
 | **Application Lifecycle** | **Submit → dashboard → review UI (M2)** | Approval/rejection actions, offer generation, acceptance, disbursement |
-| **Loan Management** | List view | Schedule, repayment recording, closure, restructuring |
+| **Loan Management** | **List view + products CRUD (M8)** | Schedule, repayment recording, closure, restructuring |
 | **Collections** | **DPD table + priority + agent actions (M6)** | Legal escalation, recovery tracking |
-| **User/Role Management** | **Invitation flow + role-based navigation (M1b+M7)** | CRUD, role assignment per tenant |
+| **User/Role Management** | **Invitation flow + role-based navigation + tenant users (M1b+M7+M8)** | CRUD, role assignment per tenant |
 | **Notifications** | None | Email/SMS/webhook for status changes, due dates, approvals |
-| **Reporting/Analytics** | **Real platform analytics (M2)** | Real portfolio metrics, regulatory reports, audit trails |
+| **Reporting/Analytics** | **Real platform + tenant analytics (M2+M8)** | Regulatory reports, audit trails |
 
 **Only implement what's supported by existing data model.** Don't invent financial rules.
 
