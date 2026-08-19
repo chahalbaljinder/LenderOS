@@ -27,7 +27,7 @@
 |--------|------------|----------------|---------|
 | **Tenants** | list, create, get, update, delete, approve, stats | List, New, Detail, Users | ✅ List, New, Detail, Users, Approve, Stats |
 | **Customers** | list, create, get, update, credit-report | List, New | ❌ **Detail page**, Credit Report |
-| **KYC** | getKycStatus, submitPan, submitAadhaar, submitFace, submitEmployment | ❌ **None** | ❌ **All KYC pages** |
+| **KYC** | getKycStatus, submitPan, submitAadhaar, submitFace, submitEmployment | KYC Detail page with 4 tabs | ✅ |
 | **Risk** | getRiskScore, analyzeRisk, getFraudFlags | In Application Detail | ✅ (partial) |
 | **Repayments** | list, record | In Loan Detail | ✅ (partial) |
 | **Users** | getMe, updateMe, list, create, get, update | Me, Tenant Users | ❌ **List (super), Create (super), Detail (super), Update (super)** |
@@ -47,20 +47,18 @@
 ## Priority Gaps to Fill
 
 ### P0 - Critical (Core workflows broken)
-1. **Customer Detail page** - backend has getCustomer, updateCustomer
-2. **KYC pages** - 5 operations, no UI at all
-3. **Settings page** - real implementation needed (tenant settings API exists)
+1. **Settings page** - real implementation needed (tenant settings API exists)
 
 ### P1 - High (Important workflows)
-4. **Loan Schedule page** - getLoanSchedule exists
-5. **User Management (super admin)** - list, create, get, update
-6. **Settings/API Keys** - real implementation
-7. **Loan Products** - Edit page needs connect to update API
+2. **Loan Schedule page** - getLoanSchedule exists
+3. **User Management (super admin)** - list, create, get, update
+4. **Settings/API Keys** - real implementation
+5. **Loan Products** - Edit page needs connect to update API
 
 ### P2 - Medium
-8. **Customer Credit Report** page
-9. **Audit Logs** (enhance)
-9. **API Keys** real implementation
+6. **Customer Credit Report** page
+7. **Audit Logs** (enhance)
+8. **API Keys** real implementation
 
 ## Next Steps
 
