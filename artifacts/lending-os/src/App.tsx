@@ -21,6 +21,7 @@ import TenantUsersPage from "@/pages/tenants/users";
 import ApplicationsList from "@/pages/applications/list";
 import NewApplicationPage from "@/pages/applications/new";
 import ApplicationDetailPage from "@/pages/applications/detail";
+import KycDetailPage from "@/pages/kyc/detail";
 import CustomersList from "@/pages/customers/list";
 import NewCustomerPage from "@/pages/customers/new";
 import CustomerDetailPage from "@/pages/customers/detail";
@@ -544,6 +545,7 @@ function AppRoutes() {
         <Route path="/applications/new" component={NewApplicationPage} />
         <Route path="/applications/:applicationId" component={ApplicationDetailPage} />
         <Route path="/applications" component={ApplicationsList} />
+        <Route path="/kyc/:applicationId" component={KycDetailPage} />
         <Route path="/customers/new" component={NewCustomerPage} />
         <Route path="/customers/:customerId" component={CustomerDetailPage} />
         <Route path="/customers" component={CustomersList} />
