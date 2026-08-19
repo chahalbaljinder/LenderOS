@@ -1,6 +1,37 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Link, useLocation } from "wouter";
-import { LogOut, Settings, Users, Activity, Wallet, Shield, Briefcase, FileText, ShieldCheck, UserCheck, ChevronDown, Mail } from "lucide-react";
+import {
+  LogOut,
+  Settings,
+  Users,
+  Activity,
+  Wallet,
+  Shield,
+  Briefcase,
+  FileText,
+  ShieldCheck,
+  UserCheck,
+  ChevronDown,
+  Mail,
+  BarChart2,
+  CreditCard,
+  Search,
+  Headphones,
+  TrendingUp,
+  ClipboardList,
+  AlertTriangle,
+  Building2,
+  Eye,
+  BookOpen,
+  Calculator,
+  Megaphone,
+  Handshake,
+  UserCog,
+  Layers,
+  Lock,
+  Flag,
+  RefreshCw,
+} from "lucide-react";
 import { useGetMe } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useClerk, useAuth } from "@clerk/react";
@@ -12,6 +43,115 @@ const isClerkConfigured =
   _rawKey !== "pk_test_your_key_here" &&
   !_rawKey.includes("your_key_here") &&
   _rawKey.startsWith("pk_");
+
+// Role-based navigation configuration
+const ROLE_NAVIGATION: Record<string, NavItem[]> = {
+  super_admin: [
+    { id: "dashboard", label: "Platform Overview", icon: BarChart2, href: "/dashboard", roles: ["super_admin", "platform_admin"] },
+    { id: "tenants", label: "Tenants", icon: Building2, href: "/tenants", roles: ["super_admin", "platform_admin"] },
+    { id: "invitations", label: "Invitations", icon: Mail, href: "/invitations", roles: ["super_admin", "platform_admin", "tenant_admin", "tenant_owner"] },
+    { id: "analytics", label: "Global Analytics", icon: TrendingUp, href: "/platform/analytics", roles: ["super_admin", "platform_admin"] },
+    { id: "audit", label: "Audit Logs", icon: BookOpen, href: "/audit", roles: ["super_admin", "platform_admin", "auditor", "compliance_officer"] },
+  ],
+  platform_admin: [
+    { id: "dashboard", label: "Platform Overview", icon: BarChart2, href: "/dashboard", roles: ["super_admin", "platform_admin"] },
+    { id: "tenants", label: "Tenants", icon: Building2, href: "/tenants", roles: ["super_admin", "platform_admin"] },
+    { id: "invitations", label: "Invitations", icon: Mail, href: "/invitations", roles: ["super_admin", "platform_admin", "tenant_admin", "tenant_owner"] },
+    { id: "analytics", label: "Global Analytics", icon: TrendingUp, href: "/platform/analytics", roles: ["super_admin", "platform_admin"] },
+    { id: "audit", label: "Audit Logs", icon: BookOpen, href: "/audit", roles: ["super_admin", "platform_admin", "auditor", "compliance_officer"] },
+  ],
+  tenant_owner: [
+    { id: "dashboard", label: "Command Center", icon: BarChart2, href: "/dashboard" },
+    { id: "applications", label: "Applications", icon: FileText, href: "/applications" },
+    { id: "customers", label: "Customers", icon: Users, href: "/customers" },
+    { id: "loans", label: "Active Loans", icon: CreditCard, href: "/loans" },
+    { id: "collections", label: "Collections", icon: AlertTriangle, href: "/collections" },
+    { id: "products", label: "Loan Products", icon: Layers, href: "/products" },
+    { id: "audit", label: "Audit Logs", icon: BookOpen, href: "/audit" },
+    { id: "settings", label: "Tenant Settings", icon: Settings, href: "/settings" },
+    { id: "invitations", label: "Invitations", icon: Mail, href: "/invitations" },
+    { id: "analytics", label: "Tenant Analytics", icon: TrendingUp, href: "/platform/analytics" },
+  ],
+  tenant_admin: [
+    { id: "dashboard", label: "Command Center", icon: BarChart2, href: "/dashboard" },
+    { id: "applications", label: "Applications", icon: FileText, href: "/applications" },
+    { id: "customers", label: "Customers", icon: Users, href: "/customers" },
+    { id: "loans", label: "Active Loans", icon: CreditCard, href: "/loans" },
+    { id: "collections", label: "Collections", icon: AlertTriangle, href: "/collections" },
+    { id: "products", label: "Loan Products", icon: Layers, href: "/products" },
+    { id: "audit", label: "Audit Logs", icon: BookOpen, href: "/audit" },
+    { id: "settings", label: "Tenant Settings", icon: Settings, href: "/settings" },
+    { id: "invitations", label: "Invitations", icon: Mail, href: "/invitations" },
+  ],
+  risk_manager: [
+    { id: "dashboard", label: "Risk Dashboard", icon: BarChart2, href: "/dashboard" },
+    { id: "applications", label: "Applications Review", icon: ClipboardList, href: "/applications" },
+    { id: "analytics", label: "Risk Analytics", icon: TrendingUp, href: "/platform/analytics" },
+  ],
+  loan_manager: [
+    { id: "dashboard", label: "Loan Dashboard", icon: BarChart2, href: "/dashboard" },
+    { id: "applications", label: "Applications", icon: FileText, href: "/applications" },
+    { id: "loans", label: "Active Loans", icon: CreditCard, href: "/loans" },
+    { id: "products", label: "Loan Products", icon: Layers, href: "/products" },
+    { id: "analytics", label: "Loan Analytics", icon: TrendingUp, href: "/platform/analytics" },
+  ],
+  collection_manager: [
+    { id: "dashboard", label: "Collections Dashboard", icon: BarChart2, href: "/dashboard" },
+    { id: "collections", label: "Collections", icon: AlertTriangle, href: "/collections" },
+    { id: "loans", label: "Overdue Loans", icon: CreditCard, href: "/loans" },
+    { id: "analytics", label: "Collections Analytics", icon: TrendingUp, href: "/platform/analytics" },
+  ],
+  customer_support: [
+    { id: "dashboard", label: "Support Dashboard", icon: BarChart2, href: "/dashboard" },
+    { id: "customers", label: "Customers", icon: Users, href: "/customers" },
+    { id: "applications", label: "Applications", icon: FileText, href: "/applications" },
+    { id: "loans", label: "Loans", icon: CreditCard, href: "/loans" },
+  ],
+  sales_agent: [
+    { id: "dashboard", label: "Sales Dashboard", icon: BarChart2, href: "/dashboard" },
+    { id: "customers", label: "Customers", icon: Users, href: "/customers" },
+    { id: "applications", label: "New Application", icon: FileText, href: "/applications/new" },
+    { id: "leads", label: "Leads", icon: Search, href: "/customers" },
+  ],
+  dsa: [
+    { id: "dashboard", label: "DSA Dashboard", icon: BarChart2, href: "/dashboard" },
+    { id: "customers", label: "My Customers", icon: Users, href: "/customers" },
+    { id: "applications", label: "New Application", icon: FileText, href: "/applications/new" },
+  ],
+  relationship_manager: [
+    { id: "dashboard", label: "RM Dashboard", icon: BarChart2, href: "/dashboard" },
+    { id: "customers", label: "My Customers", icon: Users, href: "/customers" },
+    { id: "applications", label: "Applications", icon: FileText, href: "/applications" },
+    { id: "loans", label: "Loans", icon: CreditCard, href: "/loans" },
+  ],
+  customer: [
+    { id: "apply", label: "Apply for Loan", icon: FileText, href: "/apply" },
+    { id: "my-applications", label: "My Applications", icon: ClipboardList, href: "/applications" },
+    { id: "my-loans", label: "My Loans", icon: CreditCard, href: "/loans" },
+    { id: "repayments", label: "Repayments", icon: Calculator, href: "/loans" },
+  ],
+  auditor: [
+    { id: "audit", label: "Audit Logs", icon: BookOpen, href: "/audit" },
+    { id: "analytics", label: "Reports", icon: BarChart2, href: "/platform/analytics" },
+  ],
+  compliance_officer: [
+    { id: "audit", label: "Audit Logs", icon: BookOpen, href: "/audit" },
+    { id: "analytics", label: "Compliance Reports", icon: BarChart2, href: "/platform/analytics" },
+  ],
+};
+
+// Default fallback navigation
+const DEFAULT_NAVIGATION: NavItem[] = [
+  { id: "dashboard", label: "Dashboard", icon: BarChart2, href: "/dashboard" },
+];
+
+interface NavItem {
+  id: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  href: string;
+  roles?: string[];
+}
 
 export function DashboardLayout({
   children,
@@ -41,11 +181,12 @@ export function DashboardLayout({
     return <div className="flex min-h-screen items-center justify-center font-mono text-primary animate-pulse">Loading Workspace...</div>;
   }
 
-  const isSuper = user?.role === "super_admin" || user?.role === "platform_admin";
+  const role = user?.role || "customer";
+  const navigation = useMemo(() => ROLE_NAVIGATION[role] || DEFAULT_NAVIGATION, [role]);
 
   return (
     <div className="min-h-screen bg-background flex flex-col md:flex-row font-sans">
-      <Sidebar isSuper={isSuper} activeTab={activeTab} user={user} />
+      <Sidebar navigation={navigation} activeTab={activeTab} user={user} />
       <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
         <Header user={user} />
         <main className="flex-1 overflow-y-auto p-6">{children}</main>
@@ -55,100 +196,14 @@ export function DashboardLayout({
 }
 
 function Sidebar({
-  isSuper,
+  navigation,
   activeTab,
   user,
 }: {
-  isSuper: boolean;
+  navigation: NavItem[];
   activeTab: string;
   user: any;
 }) {
-  const superLinks = [
-    {
-      id: "dashboard",
-      label: "Platform Overview",
-      icon: <Activity className="w-4 h-4" />,
-      href: "/dashboard",
-    },
-    {
-      id: "tenants",
-      label: "Tenants",
-      icon: <Briefcase className="w-4 h-4" />,
-      href: "/tenants",
-    },
-    {
-      id: "invitations",
-      label: "Invitations",
-      icon: <Mail className="w-4 h-4" />,
-      href: "/invitations",
-    },
-    {
-      id: "analytics",
-      label: "Global Analytics",
-      icon: <Activity className="w-4 h-4" />,
-      href: "/platform/analytics",
-    },
-  ];
-
-  const tenantLinks = [
-    {
-      id: "dashboard",
-      label: "Command Center",
-      icon: <Activity className="w-4 h-4" />,
-      href: "/dashboard",
-    },
-    {
-      id: "applications",
-      label: "Applications",
-      icon: <FileText className="w-4 h-4" />,
-      href: "/applications",
-    },
-    {
-      id: "customers",
-      label: "Customers",
-      icon: <Users className="w-4 h-4" />,
-      href: "/customers",
-    },
-    {
-      id: "loans",
-      label: "Active Loans",
-      icon: <Wallet className="w-4 h-4" />,
-      href: "/loans",
-    },
-    {
-      id: "collections",
-      label: "Collections",
-      icon: <Shield className="w-4 h-4" />,
-      href: "/collections",
-    },
-    {
-      id: "products",
-      label: "Loan Products",
-      icon: <Briefcase className="w-4 h-4" />,
-      href: "/products",
-    },
-    {
-      id: "audit",
-      label: "Audit Logs",
-      icon: <Shield className="w-4 h-4" />,
-      href: "/audit",
-    },
-    {
-      id: "settings",
-      label: "Tenant Settings",
-      icon: <Settings className="w-4 h-4" />,
-      href: "/settings",
-    },
-    {
-      id: "invitations",
-      label: "Invitations",
-      icon: <Mail className="w-4 h-4" />,
-      href: "/invitations",
-    },
-  ];
-
-  const links = isSuper ? superLinks : tenantLinks;
-
   return (
     <aside className="w-full md:w-64 border-r border-border bg-card flex flex-col">
       <div className="h-16 flex items-center px-6 border-b border-border">
@@ -165,7 +220,7 @@ function Sidebar({
         </div>
       )}
 
-      {!isSuper && user?.tenantName && (
+      {user?.tenantName && (
         <div className="px-6 py-4 border-b border-border bg-card/50">
           <div className="text-xs font-mono text-muted-foreground uppercase tracking-wider mb-1">
             Active Tenant
@@ -178,7 +233,7 @@ function Sidebar({
       )}
 
       <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
-        {links.map((link) => {
+        {navigation.map((link) => {
           const active = activeTab === link.id;
           return (
             <Link
@@ -190,7 +245,7 @@ function Sidebar({
                   : "text-zinc-400 hover:bg-white/5 hover:text-white border-l-2 border-transparent"
               }`}
             >
-              {link.icon}
+              <link.icon className="w-4 h-4" />
               {link.label}
             </Link>
           );
