@@ -28,6 +28,7 @@ import CollectionsList from "@/pages/collections/list";
 import CollectionDetailPage from "@/pages/collections/detail";
 import ProductsList from "@/pages/products/list";
 import NewProductPage from "@/pages/products/new";
+import ProductDetailPage from "@/pages/products/detail";
 import AuditList from "@/pages/audit/list";
 import SettingsPage from "@/pages/settings";
 import CustomerApply from "@/pages/apply";
@@ -546,6 +547,7 @@ function AppRoutes() {
         <Route path="/collections/:collectionId" component={CollectionDetailPage} />
         <Route path="/collections" component={CollectionsList} />
         <Route path="/products/new" component={NewProductPage} />
+        <Route path="/products/:productId" component={ProductDetailPage} />
         <Route path="/products/*" component={ProductsList} />
         <Route path="/audit/*" component={AuditList} />
         <Route path="/settings/*" component={SettingsPage} />
