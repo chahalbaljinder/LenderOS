@@ -295,4 +295,5 @@ All critical personas can complete their required workflows end-to-end.
 | 2026-08-15 | M1 | COMPLETE | Clerk auth transport fixed: bearer token verification, login redirect, logout, session race condition |
 | 2026-08-19 | M1b | COMPLETE | Identity provisioning: invitations, Clerk webhook, customer.clerkId, frontend invitations page, OpenAPI spec, demo seeds |
 | 2026-08-19 | M2 | COMPLETE | Routing & Navigation - replaced placeholders with real pages (tenants, applications, platform analytics, customers), removed invalid loans/new route |
-| 2026-08-19 | M3 | ACTIVE | Application Review - turn application API into usable NBFC workflow (detail, KYC, financial, risk, approve/reject) |
+| 2026-08-19 | M3 | COMPLETE | Application Review - connected approve/reject/disburse actions to real API, added modals with forms |
+| 2026-08-19 | M4 | ACTIVE | Offer & Acceptance - connect approved application to offer generation, borrower acceptance, state persistence |
