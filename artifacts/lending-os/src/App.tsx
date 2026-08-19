@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState, Component, type ReactNode } from "react";
-import { useState } from "react";
 import { ClerkProvider, SignIn, SignUp, useClerk, useAuth, useUser } from "@clerk/react";
 import { publishableKeyFromHost } from "@clerk/react/internal";
 import { shadcn } from "@clerk/themes";
@@ -43,6 +42,7 @@ import PlaceholderPage from "@/pages/placeholder";
 import InvitationsList from "@/pages/invitations/list";
 import PlatformAnalyticsPage from "@/pages/platform/analytics";
 import TenantAnalyticsPage from "@/pages/platform/tenant-analytics";
+import SettingsPage from "@/pages/settings";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -504,13 +504,31 @@ function AcceptInvitationPage() {
 function DashboardRoute() {
   const { isLoaded, isSignedIn } = useAuth();
   const { data: user, isLoading, isError } = useGetMe();
+  const isClerkConfigured = Boolean(clerkPubKey);
+
+  // Ensure demo user ID is set in localStorage for demo mode
+  if (typeof window !== "undefined" && !localStorage.getItem("lenderos_demo_user_id")) {
+    localStorage.setItem("lenderos_demo_user_id", "user_demo_super_admin");
+  }
 
   // Wait for Clerk to load session before making API call
   if (!isLoaded) {
     return <div className="flex min-h-screen items-center justify-center font-mono text-primary animate-pulse">Loading session...</div>;
   }
 
-  // If not signed in, redirect to sign-in
+  // If Clerk is not configured (demo mode), use demo auth
+  if (!isClerkConfigured) {
+    if (isError) {
+      return <div className="flex min-h-screen items-center justify-center font-mono text-primary animate-pulse">Session expired, redirecting...</div>;
+    }
+    if (isLoading) return <div className="flex min-h-screen items-center justify-center font-mono text-primary animate-pulse">Loading Workspace...</div>;
+    if (user?.role === 'super_admin' || user?.role === 'platform_admin') {
+      return <SuperAdminDashboard user={user} />;
+    }
+    return <TenantDashboard user={user} />;
+  }
+
+  // Clerk is configured - use Clerk auth
   if (!isSignedIn) {
     return <div className="flex min-h-screen items-center justify-center font-mono text-primary animate-pulse">Redirecting to sign in...</div>;
   }

@@ -165,21 +165,34 @@ export function DashboardLayout({
 }) {
   const { isLoaded, isSignedIn } = useAuth();
   const { data: userFromHook, isLoading, isError } = useGetMe();
+  const isClerkConfigured = Boolean(clerkPubKey);
 
   const user = userProp ?? userFromHook;
 
   // Wait for Clerk to load session before rendering
-  if (!isLoaded || !isSignedIn) {
+  if (!isLoaded) {
     return <div className="flex min-h-screen items-center justify-center font-mono text-primary animate-pulse">Loading session...</div>;
   }
 
-  // If there's an auth error, don't render the layout
-  if (isError && !userProp) {
-    return <div className="flex min-h-screen items-center justify-center font-mono text-primary animate-pulse">Session expired, redirecting...</div>;
-  }
-
-  if (isLoading && !userProp) {
-    return <div className="flex min-h-screen items-center justify-center font-mono text-primary animate-pulse">Loading Workspace...</div>;
+  // If Clerk is not configured (demo mode), use demo auth
+  if (!isClerkConfigured) {
+    if (isError && !userProp) {
+      return <div className="flex min-h-screen items-center justify-center font-mono text-primary animate-pulse">Session expired, redirecting...</div>;
+    }
+    if (isLoading && !userProp) {
+      return <div className="flex min-h-screen items-center justify-center font-mono text-primary animate-pulse">Loading Workspace...</div>;
+    }
+  } else {
+    // Clerk is configured - use Clerk auth
+    if (!isLoaded || !isSignedIn) {
+      return <div className="flex min-h-screen items-center justify-center font-mono text-primary animate-pulse">Loading session...</div>;
+    }
+    if (isError && !userProp) {
+      return <div className="flex min-h-screen items-center justify-center font-mono text-primary animate-pulse">Session expired, redirecting...</div>;
+    }
+    if (isLoading && !userProp) {
+      return <div className="flex min-h-screen items-center justify-center font-mono text-primary animate-pulse">Loading Workspace...</div>;
+    }
   }
 
   const role = user?.role || "customer";
