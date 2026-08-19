@@ -17,6 +17,7 @@ import TenantDashboard from "@/pages/dashboard-tenant";
 import TenantsList from "@/pages/tenants/list";
 import NewTenantPage from "@/pages/tenants/new";
 import TenantDetailPage from "@/pages/tenants/detail";
+import TenantUsersPage from "@/pages/tenants/users";
 import ApplicationsList from "@/pages/applications/list";
 import NewApplicationPage from "@/pages/applications/new";
 import ApplicationDetailPage from "@/pages/applications/detail";
@@ -535,6 +536,7 @@ function AppRoutes() {
         <Route path="/accept-invitation/:token" component={AcceptInvitationPage} />
         <Route path="/dashboard" component={DashboardRoute} />
         <Route path="/tenants/new" component={NewTenantPage} />
+        <Route path="/tenants/:tenantId/users" component={TenantUsersPage} />
         <Route path="/tenants/:tenantId" component={TenantDetailPage} />
         <Route path="/tenants" component={TenantsList} />
         <Route path="/applications/new" component={NewApplicationPage} />
