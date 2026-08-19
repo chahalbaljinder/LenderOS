@@ -18,6 +18,7 @@ import TenantsList from "@/pages/tenants/list";
 import NewTenantPage from "@/pages/tenants/new";
 import TenantDetailPage from "@/pages/tenants/detail";
 import TenantUsersPage from "@/pages/tenants/users";
+import UserManagementPage from "@/pages/users/list";
 import ApplicationsList from "@/pages/applications/list";
 import NewApplicationPage from "@/pages/applications/new";
 import ApplicationDetailPage from "@/pages/applications/detail";
@@ -542,6 +543,7 @@ function AppRoutes() {
         <Route path="/tenants/:tenantId/users" component={TenantUsersPage} />
         <Route path="/tenants/:tenantId" component={TenantDetailPage} />
         <Route path="/tenants" component={TenantsList} />
+        <Route path="/users" component={UserManagementPage} />
         <Route path="/applications/new" component={NewApplicationPage} />
         <Route path="/applications/:applicationId" component={ApplicationDetailPage} />
         <Route path="/applications" component={ApplicationsList} />

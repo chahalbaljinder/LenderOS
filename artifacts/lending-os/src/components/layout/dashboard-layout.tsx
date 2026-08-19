@@ -49,6 +49,7 @@ const ROLE_NAVIGATION: Record<string, NavItem[]> = {
   super_admin: [
     { id: "dashboard", label: "Platform Overview", icon: BarChart2, href: "/dashboard", roles: ["super_admin", "platform_admin"] },
     { id: "tenants", label: "Tenants", icon: Building2, href: "/tenants", roles: ["super_admin", "platform_admin"] },
+    { id: "users", label: "User Management", icon: UserCog, href: "/users", roles: ["super_admin", "platform_admin"] },
     { id: "invitations", label: "Invitations", icon: Mail, href: "/invitations", roles: ["super_admin", "platform_admin", "tenant_admin", "tenant_owner"] },
     { id: "analytics", label: "Global Analytics", icon: TrendingUp, href: "/platform/analytics", roles: ["super_admin", "platform_admin"] },
     { id: "audit", label: "Audit Logs", icon: BookOpen, href: "/audit", roles: ["super_admin", "platform_admin", "auditor", "compliance_officer"] },
