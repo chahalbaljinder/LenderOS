@@ -86,7 +86,7 @@ Make real authentication reliable without breaking demo mode.
 
 ## M1b — IDENTITY PROVISIONING FOUNDATION
 
-**Status:** ACTIVE
+**Status:** COMPLETE
 
 ### Objective
 Build the identity provisioning layer: invitations, Clerk webhooks, and customer-Clerk linking — the prerequisite for all three POVs to onboard users in production.
@@ -291,5 +291,5 @@ All critical personas can complete their required workflows end-to-end.
 |---|---|---|---|
 | 2026-08-15 | M0 | COMPLETE | Baseline verified, AI baseline created |
 | 2026-08-15 | M1 | COMPLETE | Clerk auth transport fixed: bearer token verification, login redirect, logout, session race condition |
-| 2026-08-15 | M1b | ACTIVE | Identity provisioning: invitations, Clerk webhook, customer.clerkId |
-| 2026-08-15 | M2 | NOT_STARTED | Routing & Navigation - fix missing routes, placeholders, wildcards |
+| 2026-08-19 | M1b | COMPLETE | Identity provisioning: invitations, Clerk webhook, customer.clerkId, frontend invitations page, OpenAPI spec, demo seeds |
+| 2026-08-19 | M2 | ACTIVE | Routing & Navigation - fix missing routes, placeholders, wildcards |

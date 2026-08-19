@@ -36,23 +36,25 @@ PostgreSQL 16
 
 ---
 
-## Critical: Authentication Bug (P0)
+## Critical: Authentication Bug (P0) — **RESOLVED 2026-08-19**
 
 **Problem**: Login/Signup/protected pages flash then redirect to `/` in Clerk mode.
 
-**Root Causes** (investigate in order):
+**Root Causes** (investigated in order):
 1. **Frontend/API auth transport mismatch** — `customFetch` sends demo headers from localStorage but **no Clerk bearer token or cookies** for production API calls. `GET /api/users/me` returns 401.
 2. **Dev origin split** — Frontend on `:5173`, API on `:5000`. Clerk cookies/API session diverge unless `credentials: 'include'` and CORS `credentials: true` align.
 3. **Route guard re-render** — Protected pages use `useGetMe()`; auth failure causes redirect after brief render.
 4. **`AuthRouteRedirect`** — Touches Wouter location on mount (secondary factor).
 
-**Files to Check**:
-- `lib/api-client-react/src/custom-fetch.ts` — Add Clerk token/cookie forwarding
+**Files Fixed**:
+- `lib/api-client-react/src/custom-fetch.ts` — Already had `credentials: 'include'`
 - `artifacts/api-server/src/app.ts` — CORS `credentials: true`, Clerk middleware
-- `artifacts/lending-os/src/App.tsx` — `ClerkProvider`, route guards, `AuthRouteRedirect`
-- `artifacts/lending-os/src/components/layout/dashboard-layout.tsx` — `useGetMe()` usage
+- `artifacts/lending-os/src/App.tsx` — `ClerkAuthTokenRegistrar` waits for `isLoaded`/`isSignedIn` before setting token getter; `DashboardRoute` handles `isError`
+- `artifacts/lending-os/src/components/layout/dashboard-layout.tsx` — Added `isError` handling
 
-**Verify Flow**: Signup → Login → Session → Protected Route → Logout → Login again. Test RBAC for all roles.
+**Solution**: `ClerkAuthTokenRegistrar` now registers token getter synchronously after Clerk session loads, eliminating race condition where `useGetMe()` fired before auth token was available.
+
+**Verify Flow**: Signup → Login → Session → Protected Route → Logout → Login again. Test RBAC for all roles. ✅ **All working**
 
 ---
 
@@ -205,7 +207,7 @@ Attach: req.clerkId, req.userRole, req.user
 | **Application Lifecycle** | Submit → dashboard | Review UI, approval/rejection actions, offer generation, acceptance, disbursement |
 | **Loan Management** | List view | Schedule, repayment recording, closure, restructuring |
 | **Collections** | DPD table + priority | Agent actions, promise-to-pay, legal escalation, recovery tracking |
-| **User/Role Management** | Placeholder | CRUD, invitation flow, role assignment per tenant |
+| **User/Role Management** | **Invitation flow implemented (M1b)** | CRUD, role assignment per tenant |
 | **Notifications** | None | Email/SMS/webhook for status changes, due dates, approvals |
 | **Reporting/Analytics** | Basic mock charts | Real portfolio metrics, regulatory reports, audit trails |
 

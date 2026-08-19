@@ -197,3 +197,22 @@ Use Vitest (Vite-native test runner) with Supertest for HTTP testing. Mock datab
 - TypeScript support out of the box
 - Easy mocking with vi.hoisted()
 - Integration with Vite ecosystem
+
+---
+
+## ADR-011: Auth Token Registration - Synchronous After Clerk Session Load
+**Date**: 2026-08-19
+**Status**: Accepted
+
+### Context
+Clerk authentication in production mode was failing with a redirect loop: users would sign in, get redirected to `/dashboard`, see a brief flash, then get redirected back to `/` (home page).
+
+### Decision
+Modified `ClerkAuthTokenRegistrar` to wait for `isLoaded` and `isSignedIn` from Clerk's `useAuth()` hook before registering the token getter. This ensures the auth token is available before any API calls (like `useGetMe()`) are made.
+
+### Consequences
+- Eliminates race condition between Clerk session loading and API token registration
+- `useGetMe()` in `DashboardRoute` now fires after token is available
+- `isError` handling added to `DashboardRoute` and `DashboardLayout` for expired sessions
+- API server binds to `0.0.0.0` with proper error logging for containerized deployments
+- Demo mode continues to work unchanged

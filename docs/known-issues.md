@@ -374,5 +374,41 @@ Check for WebSocket or Server-Sent Events — none exist.
 - Issue #006 is a known limitation of Clerk proxy
 - Issue #002 requires Redis for production deployment
 
-**Last Updated**: 2026-08-13
+### Resolved Issues
+
+## Issue #013: Clerk Auth Redirect Loop (RESOLVED 2026-08-19)
+
+### Problem
+Login/Signup/protected pages flash then redirect to `/` in Clerk mode. Users cannot stay on protected routes after authentication.
+
+### Reproduction
+1. Sign in via Clerk
+2. Redirect to `/dashboard`
+3. Brief render then redirect back to `/`
+
+### Impact
+- Complete auth failure in Clerk mode
+- Demo mode worked but production auth broken
+
+### Root Cause
+Frontend/API auth transport mismatch:
+- `customFetch` sent demo headers from localStorage but **no Clerk bearer token or cookies** for production API calls
+- `ClerkAuthTokenRegistrar` registered token getter in `useEffect` (runs after render) while `DashboardRoute`'s `useGetMe()` fired immediately on mount
+- Race condition: API call made before auth token available → 401 → redirect
+
+### Status
+**RESOLVED** — Fixed in commit af9e660
+
+### Solution
+1. `ClerkAuthTokenRegistrar` now waits for `isLoaded`/`isSignedIn` before setting token getter
+2. `DashboardRoute` and `DashboardLayout` handle `isError` for expired sessions
+3. API server binds to `0.0.0.0` with proper error logging
+
+### Related Files
+- `lib/api-client-react/src/custom-fetch.ts` (already had `credentials: 'include'`)
+- `artifacts/api-server/src/app.ts` (CORS `credentials: true`)
+- `artifacts/lending-os/src/App.tsx` (`ClerkAuthTokenRegistrar`, `DashboardRoute`)
+- `artifacts/lending-os/src/components/layout/dashboard-layout.tsx` (`isError` handling)
+
+**Last Updated**: 2026-08-19
 **Next Review**: Before production deployment

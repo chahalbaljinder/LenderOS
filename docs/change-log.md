@@ -8,106 +8,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- **Health Check Endpoint Enhancement** (`artifacts/api-server/src/routes/health.ts`)
-  - Extended `HealthStatus` schema in OpenAPI spec with: `api`, `database`, `uptime`, `timestamp`, `version` fields
-  - Health check now performs actual database connectivity test (`SELECT 1`)
-  - Returns server uptime in seconds since start
-  - Returns ISO 8601 timestamp
-  - Returns API version from `npm_package_version`
-  - Returns 200 for healthy, 503 for degraded (database down)
-  - Added comprehensive unit tests with Vitest + Supertest (5 tests passing)
+- **M1b — Identity Provisioning Foundation** (2026-08-19)
+  - Frontend invitations management page (`artifacts/lending-os/src/pages/invitations/list.tsx`)
+    - Create invitations with email, role, tenant
+    - List all invitations with status, role, expiry
+    - Resend pending invitations (new token, extended expiry)
+    - Cancel pending invitations
+    - Revoke active/provisioned invitations (deactivates linked user)
+    - Copy acceptance URL to clipboard
+  - Sidebar navigation for Invitations (tenant admins + super admins) in `dashboard-layout.tsx`
+  - OpenAPI spec additions (`lib/api-spec/openapi.yaml`):
+    - `/invitations` POST/GET, `/invitations/{id}` GET/PATCH
+    - `/invitations/{id}/resend`, `/invitations/{id}/cancel`, `/invitations/{id}/revoke` POST
+    - `/invitations/accept/{token}` POST
+    - `/webhooks/clerk` POST (Clerk user lifecycle events)
+    - Schemas: Invitation, InvitationInput, InvitationUpdate, InvitationListResponse, InvitationResendResponse, InvitationAcceptResponse, WebhookResponse
+  - Codegen: Zod schemas + React Query hooks generated for all new endpoints
+  - Demo invitation seeds in `artifacts/api-server/src/seed.ts`:
+    - NBFC admin invitation (super_admin → tenant_admin)
+    - Risk Manager invitation (tenant_admin → risk_manager)
 
-- **Rate Limiting Middleware** (`artifacts/api-server/src/middlewares/rateLimiter.ts`)
-  - General limiter: 100 req/15min (all routes except `/healthz`)
-  - Auth limiter: 20 req/15min (`/api/auth`, `/api/sign-in`, `/api/sign-up`)
-  - Strict limiter: 30 req/15min (`/api/tenants`, `/api/users`)
-  - Uses `express-rate-limit` package
-  - Proper logging of rate limit violations
-
-- **RBAC (Role-Based Access Control) Middleware** (`artifacts/api-server/src/middlewares/rbac.ts`)
-  - Role hierarchy: super_admin (100) > platform_admin (90) > tenant_owner (80) > tenant_admin (70) > risk_manager (60) > loan_manager (50) > collection_manager (40) > customer_support (30) > sales_agent (20) > dsa (15) > relationship_manager (10) > customer/auditor/compliance_officer (5)
-  - Middleware functions: `requireRole()`, `requireSuperAdmin()`, `requireTenantAdmin()`, `requireTenantAccess()`, `requireCustomerAccess()`
-  - Tenant isolation: `ensureTenantAccess()` prevents cross-tenant data access
-  - `getTenantId()` helper for extracting tenant context
-
-- **CORS Restriction** (`artifacts/api-server/src/app.ts`)
-  - Replaced permissive `origin: true` with configurable allowed origins
-  - Origins from `CORS_ALLOWED_ORIGINS` env var (comma-separated)
-  - Defaults to `http://localhost:5173`, `http://localhost:3000` for development
-  - Logs blocked origins for security monitoring
-
-- **Production Auth Hardening** (`artifacts/api-server/src/lib/auth.ts`)
-  - Removed demo fallback in production (`NODE_ENV=production`)
-  - Added `isDemoMode()` helper: `NODE_ENV !== 'production' && !isClerkConfigured()`
-  - Returns 401 Unauthorized when no valid Clerk session in production
-  - Demo mode still works for local development with `x-demo-user-id` header
-
-- **Demo Credentials Documentation** (`DEMO_CREDENTIALS.md`)
-  - Complete list of seeded users with emails, Clerk IDs, roles, tenants
-  - Role hierarchy and permissions table
-  - Testing instructions with curl examples
-  - Seeded tenants, customers, loan products, applications, loans, collections
+- **Clerk Auth Fix** (2026-08-19)
+  - Fixed redirect loop on login/signup/protected pages
+  - `ClerkAuthTokenRegistrar` now waits for `isLoaded`/`isSignedIn` before setting token getter
+  - `DashboardRoute` and `DashboardLayout` handle `isError` for expired sessions
+  - API server binds to `0.0.0.0` with proper error logging
 
 ### Changed
-- **Health Check Route** (`artifacts/api-server/src/routes/health.ts`)
-  - Moved from simple `{ status: "ok" }` to comprehensive health check
-  - Now uses `db.execute(sql\`SELECT 1\`)` for database connectivity
-  - Zod validation of response against `HealthCheckResponse` schema
-
-- **Routes Index** (`artifacts/api-server/src/routes/index.ts`)
-  - Removed duplicate `/healthz` route from main router
-  - Added import and registration of `healthRouter`
-  - Maintains route order: health first, then all other routers
-
-- **App Factory** (`artifacts/api-server/src/app.ts`)
-  - Refactored to `createApp()` factory function for testing
-  - Added rate limiting middleware chain
-  - Added CORS configuration with origin validation
-  - Added Clerk auth middleware with publishable key derivation
-  - Skips pinoHttp logging in test environment
-  - Changed `router.handle()` to `router()` for Express 5 compatibility
-  - Removed demo fallback error handling (`shouldUseDemoFallback`, `getDemoFallbackResponse`)
-
-- **Tenant Routes** (`artifacts/api-server/src/routes/tenants.ts`)
-  - Replaced inline `ensureAdmin()` with `requireSuperAdmin()` middleware
-  - Added `ensureTenantAccess()` for tenant-scoped endpoints
-  - Removed `any` type usage, improved type safety
-
-- **OpenAPI Spec** (`lib/api-spec/openapi.yaml`)
-  - Extended `HealthStatus` schema with detailed fields and enums
-  - Added descriptions for all health check properties
-
-- **Environment Example** (`.env.example`)
-  - Added `CORS_ALLOWED_ORIGINS` configuration
-  - Added comment about production CORS configuration
-
-### Fixed
-- **Express 5 Compatibility** (`artifacts/api-server/src/app.ts`)
-  - Changed `router.handle(req, res, next)` to `router(req, res, next)`
-  - Fixed TypeScript error: Property 'handle' does not exist on type 'Router'
-
-### Security
-- **Authentication**: Demo fallback removed in production - requires valid Clerk session
-- **Authorization**: All routes now have proper RBAC middleware
-- **Rate Limiting**: Three-tier protection against abuse
-- **CORS**: Restricted to configured origins only
-- **Tenant Isolation**: Cross-tenant data access prevented by default
+- **Auth Token Registration** (`artifacts/lending-os/src/App.tsx`): Token getter registered synchronously after Clerk session loaded
+- **Dashboard Layout** (`artifacts/lending-os/src/components/layout/dashboard-layout.tsx`): Added Invitations link to tenant and super admin sidebars
+- **Database Seed** (`artifacts/api-server/src/seed.ts`): Added demo invitations for NBFC admin and Risk Manager onboarding
 
 ### Testing
-- **Health Endpoint Tests** (`artifacts/api-server/src/routes/health.test.ts`)
-  - 5 unit tests covering healthy/degraded states, timestamp validation, version inclusion, schema validation
-  - Uses Vitest with vi.hoisted() for proper mock setup
-  - Mocks `@workspace/db` and `../lib/logger`
-  - All tests passing
-
-### Build
-- **TypeScript**: Fixed Express 5 Router type issue
-- **Build**: `pnpm --filter @workspace/api-server build` completes successfully
-- **Tests**: `pnpm --filter @workspace/api-server test` - 5/5 tests passing
-
-### Dependencies Added
-- `express-rate-limit@^8.6.2` (to `@workspace/api-server`)
-- `vitest@latest`, `@types/supertest@latest`, `supertest@latest` (devDependencies to `@workspace/api-server`)
+- All existing API tests pass (5/5 health endpoint tests)
+- Build passes for API server and frontend
 
 ---
 

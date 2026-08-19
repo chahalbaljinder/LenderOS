@@ -10,7 +10,7 @@ and run digital lending operations with full tenant data isolation.
 
 ---
 
-## Current Development State (as of 2026-08-13)
+## Current Development State (as of 2026-08-19)
 
 ### ✅ Completed Features
 - Multi-tenant architecture with complete data isolation
@@ -29,6 +29,13 @@ and run digital lending operations with full tenant data isolation.
 - CORS restriction via environment variable
 - Vitest + Supertest unit tests for health endpoint
 - Comprehensive documentation (AGENTS.md, architecture.md, decisions.md, execution-flow.md, change-log.md, DEMO_CREDENTIALS.md)
+- **Identity Provisioning Foundation (M1b)** — Invitations, Clerk webhooks, customer.clerkId linking
+  - Invitations API: create, list, get, resend, cancel, revoke, accept
+  - Clerk webhook endpoint: `user.created` → provision/link customer
+  - Frontend invitations page with full CRUD + copy acceptance URL
+  - Sidebar navigation for tenant admins & super admins
+  - OpenAPI spec + Orval codegen for all invitation/webhook endpoints
+  - Demo invitation seeds for NBFC admin & Risk Manager onboarding
 
 ### 🚧 In Progress / Planned
 - API versioning (`/api/v1/`)
@@ -37,7 +44,7 @@ and run digital lending operations with full tenant data isolation.
 - Comprehensive test coverage for all routes
 - Helmet.js security headers
 - Database migrations for production
-- Webhook system for async events
+- Webhook system for async events (Clerk webhook implemented for user lifecycle)
 - Audit logging for compliance
 
 ---
