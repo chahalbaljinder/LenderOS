@@ -39,6 +39,7 @@ import OffersList from "@/pages/offers/list";
 import PlaceholderPage from "@/pages/placeholder";
 import InvitationsList from "@/pages/invitations/list";
 import PlatformAnalyticsPage from "@/pages/platform/analytics";
+import TenantAnalyticsPage from "@/pages/platform/tenant-analytics";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -557,6 +558,7 @@ function AppRoutes() {
         <Route path="/settings/*" component={SettingsPage} />
         <Route path="/invitations" component={InvitationsList} />
         <Route path="/platform/analytics" component={PlatformAnalyticsPage} />
+        <Route path="/platform/analytics/:tenantId" component={TenantAnalyticsPage} />
         <Route path="/apply" component={CustomerApply} />
         <Route path="/" component={HomeRedirect} />
         <Route component={NotFound} />
