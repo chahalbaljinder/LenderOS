@@ -557,8 +557,7 @@ function AppRoutes() {
         <Route path="/sign-up/*?" component={SignUpPage} />
         <Route path="/accept-invitation/:token" component={AcceptInvitationPage} />
         <Route path="/dashboard" component={DashboardRoute} />
-        <Route path="/tenants/new" component={NewTenantPage} />
-        <Route path="/tenants/:tenantId/users" component={TenantUsersPage} />
+<Route path="/tenants/new" component={NewTenantPage} />
         <Route path="/tenants/:tenantId" component={TenantDetailPage} />
         <Route path="/tenants" component={TenantsList} />
         <Route path="/users" component={UserManagementPage} />
