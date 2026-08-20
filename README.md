@@ -1465,47 +1465,47 @@ provider.register();
 ```mermaid
 flowchart TB
     subgraph perimeter["Perimeter Security"]
-        WAF[WAF / Cloudflare]
-        DDoS[DDoS Protection]
-        DNS[DNSSEC + DNS over HTTPS]
+        WAF["WAF / Cloudflare"]
+        DDoS["DDoS Protection"]
+        DNS["DNSSEC + DNS over HTTPS"]
     end
 
     subgraph network["Network Security"]
-        VPC[VPC / Private Subnets]
-        SG[Security Groups: Least Privilege]
-        NACL[Network ACLs]
-        PrivateLink[AWS PrivateLink / VPC Endpoints]
+        VPC["VPC / Private Subnets"]
+        SG["Security Groups: Least Privilege"]
+        NACL["Network ACLs"]
+        PrivateLink["AWS PrivateLink / VPC Endpoints"]
     end
 
     subgraph appsec["Application Security"]
-        SAST[SAST/DAST: GitLab SAST, Semgrep]
-        SCA[SCA: Dependabot, Snyk]
-        Secrets[Secrets Scanning: TruffleHog, GitLeaks]
-        DAST[DAST: OWASP ZAP]
-        WAF_App[App WAF: ModSecurity]
+        SAST["SAST/DAST: GitLab SAST, Semgrep"]
+        SCA["SCA: Dependabot, Snyk"]
+        Secrets["Secrets Scanning: TruffleHog, GitLeaks"]
+        DAST["DAST: OWASP ZAP"]
+        WAF_App["App WAF: ModSecurity"]
     end
 
     subgraph data["Data Protection"]
-        EncryptionAtRest[AES-256: AWS KMS / HashiCorp Vault]
-        EncryptionInTransit[TLS 1.3: mTLS for Internal]
-        PII_Masking[PII Masking: Tokenization]
-        DLP[DLP Rules: Regex + ML]
-        KeyRotation[Automated Key Rotation: 90 days]
+        EncryptionAtRest["AES-256: AWS KMS / HashiCorp Vault"]
+        EncryptionInTransit["TLS 1.3: mTLS for Internal"]
+        PII_Masking["PII Masking: Tokenization"]
+        DLP["DLP Rules: Regex + ML"]
+        KeyRotation["Automated Key Rotation: 90 days"]
     end
 
     subgraph identity["Identity & Access"]
-        SSO[SSO: SAML/OIDC (Okta, Azure AD)]
-        MFA[MFA Enforcement: TOTP, WebAuthn]
-        PAM[PAM: CyberArk/BeyondTrust]
-        JIT[JIT Access: Teleport/Teleport]
-        RBAC[RBAC + ABAC: OPA/Gatekeeper]
+        SSO["SSO: SAML/OIDC (Okta, Azure AD)"]
+        MFA["MFA Enforcement: TOTP, WebAuthn"]
+        PAM["PAM: CyberArk/BeyondTrust"]
+        JIT["JIT Access: Teleport/Teleport"]
+        RBAC["RBAC + ABAC: OPA/Gatekeeper"]
     end
 
     subgraph audit["Audit & Compliance"]
-        ImmutableLogs[Immutable Audit Logs: Append-only, S3 + QLDB]
-        SIEM[SIEM: Splunk/Elastic]
-        SOAR[SOAR: Cortex XSOAR]
-        ComplianceReports[Automated Reports: RBI, GDPR, PCI-DSS]
+        ImmutableLogs["Immutable Audit Logs: Append-only, S3 + QLDB"]
+        SIEM["SIEM: Splunk/Elastic"]
+        SOAR["SOAR: Cortex XSOAR"]
+        ComplianceReports["Automated Reports: RBI, GDPR, PCI-DSS"]
     end
 ```
 
