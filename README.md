@@ -191,107 +191,120 @@ flowchart TB
 
 ## High-Level Architecture
 
-### System Context Diagram (C4 Level 1)
+### System Context Diagram (Level 1)
 
 ```mermaid
-C4Context
-    title System Context Diagram - LenderOS
+flowchart TB
+    %% Actors
+    customer["Customer/Borrower\nApplies for loans, manages repayments"]
+    rm["Relationship Manager\nManages leads, applications, customer relationships"]
+    underwriter["Underwriter/Credit Officer\nReviews applications, makes credit decisions"]
+    collections["Collections Agent\nManages overdue accounts, recovery"]
+    admin["Tenant Admin\nManages tenant operations, users, products"]
+    superadmin["Super Admin\nPlatform operations, tenant onboarding, global analytics"]
 
-    Person(customer, "Customer/Borrower", "Applies for loans, manages repayments")
-    Person(rm, "Relationship Manager", "Manages leads, applications, customer relationships")
-    Person(underwriter, "Underwriter/Credit Officer", "Reviews applications, makes credit decisions")
-    Person(collections, "Collections Agent", "Manages overdue accounts, recovery")
-    Person(admin, "Tenant Admin", "Manages tenant operations, users, products")
-    Person(superadmin, "Super Admin", "Platform operations, tenant onboarding, global analytics")
+    %% External Systems
+    creditbureau["Credit Bureaus\nCIBIL, Experian, Equifax"]
+    kyc["KYC Providers\nKarza, DigiLocker, SignDesk"]
+    payments["Payment Gateways\nRazorpay, Cashfree, UPI"]
+    comms["Communication\nTwilio, SendGrid, WhatsApp"]
+    storage["Object Storage\nS3/MinIO"]
 
-    System_Boundary(b0, "LenderOS Platform") {
-        System(webapp, "Web Application", "React 19, Vite 7, TypeScript")
-        System(api, "API Server", "Express 5, TypeScript, OpenAPI 3.0")
-        System(platformsvc, "Platform Services", "Tenant, User, Config, Audit, Notifications")
-        System(origination, "Loan Origination", "Applications, KYC, Underwriting, Offers")
-        System(loanmgmt, "Loan Management", "Disbursement, Repayment, Schedule")
-        System(collections, "Collections", "DPD tracking, Agent actions, Recovery")
-        System(risk, "AI Risk Engine", "ML-based scoring, Fraud detection")
-        System(db, "PostgreSQL 16", "Primary Data Store")
+    %% LenderOS Platform Boundary
+    subgraph platform["LenderOS Platform"]
+        webapp["Web Application\nReact 19, Vite 7, TypeScript"]
+        api["API Server\nExpress 5, TypeScript, OpenAPI 3.0"]
+        platformsvc["Platform Services\nTenant, User, Config, Audit, Notifications"]
+        origination["Loan Origination\nApplications, KYC, Underwriting, Offers"]
+        loanmgmt["Loan Management\nDisbursement, Repayment, Schedule"]
+        collections["Collections\nDPD tracking, Agent actions, Recovery"]
+        risk["AI Risk Engine\nML-based scoring, Fraud detection"]
+        db[("PostgreSQL 16\nPrimary Data Store")]
     end
 
-    System_Ext(creditbureau, "Credit Bureaus", "CIBIL, Experian, Equifax")
-    System_Ext(kyc, "KYC Providers", "Karza, DigiLocker, SignDesk")
-    System_Ext(payments, "Payment Gateways", "Razorpay, Cashfree, UPI")
-    System_Ext(comms, "Communication", "Twilio, SendGrid, WhatsApp")
-    System_Ext(storage, "Object Storage", "S3/MinIO")
+    %% External Systems
+    creditbureau["Credit Bureaus\nCIBIL, Experian, Equifax"]
+    kyc["KYC Providers\nKarza, DigiLocker, SignDesk"]
+    payments["Payment Gateways\nRazorpay, Cashfree, UPI"]
+    comms["Communication\nTwilio, SendGrid, WhatsApp"]
+    storage["Object Storage\nS3/MinIO"]
 
-    Rel(customer, webapp, "Applies for loans, views status", "HTTPS")
-    Rel(rm, webapp, "Manages leads, pipeline", "HTTPS")
-    Rel(underwriter, webapp, "Reviews, decides", "HTTPS")
-    Rel(collections, webapp, "Records actions, PTP", "HTTPS")
-    Rel(admin, webapp, "Manages tenant ops", "HTTPS")
-    Rel(superadmin, webapp, "Platform ops", "HTTPS")
+    %% Relationships
+    customer -->|"Applies for loans, views status\nHTTPS"| webapp
+    rm -->|"Manages leads, pipeline\nHTTPS"| webapp
+    underwriter -->|"Reviews, decides\nHTTPS"| webapp
+    collections -->|"Records actions, PTP\nHTTPS"| webapp
+    admin -->|"Manages tenant ops\nHTTPS"| webapp
+    superadmin -->|"Platform ops\nHTTPS"| webapp
 
-    Rel(webapp, api, "API Calls", "HTTPS/REST")
-    Rel(api, platformsvc, "Platform Ops", "gRPC/Internal")
-    Rel(api, origination, "Loan Ops", "gRPC/Internal")
-    Rel(api, loanmgmt, "Loan Ops", "gRPC/Internal")
-    Rel(api, collections, "Collections Ops", "gRPC/Internal")
-    Rel(api, risk, "Risk Scoring", "gRPC/Internal")
+    webapp -->|"API Calls\nHTTPS/REST"| api
+    api -->|"Platform Ops\ngRPC/Internal"| platformsvc
+    api -->|"Loan Ops\ngRPC/Internal"| origination
+    api -->|"Loan Ops\ngRPC/Internal"| loanmgmt
+    api -->|"Collections Ops\ngRPC/Internal"| collections
+    api -->|"Risk Scoring\ngRPC/Internal"| risk
 
-    Rel(api, db, "Read/Write", "PostgreSQL Protocol")
-    Rel(origination, creditbureau, "Credit Reports", "HTTPS/Async")
-    Rel(origination, kyc, "KYC Verification", "HTTPS/Async")
-    Rel(loanmgmt, payments, "Disbursement/Collection", "HTTPS/Async")
-    Rel(api, comms, "Notifications", "Async/Queue")
-    Rel(api, storage, "Documents", "S3 API")
+    api -->|"Read/Write\nPostgreSQL Protocol"| db
+    origination -->|"Credit Reports\nHTTPS/Async"| creditbureau
+    origination -->|"KYC Verification\nHTTPS/Async"| kyc
+    loanmgmt -->|"Disbursement/Collection\nHTTPS/Async"| payments
+    api -->|"Notifications\nAsync/Queue"| comms
+    api -->|"Documents\nS3 API"| storage
 ```
 
-### Container Diagram (C4 Level 2)
+### Container Diagram (Level 2)
 
 ```mermaid
-C4Container
-    title Container Diagram - LenderOS
-
-    Container_Boundary(c0, "LenderOS Platform") {
-        Container(web, "Web Application", "React 19, Vite 7, TypeScript", "Customer-facing and internal portals")
-        Container(api, "API Server", "Express 5, TypeScript", "REST API, OpenAPI 3.0, Zod validation")
-        Container(origination, "Loan Origination Service", "TypeScript/Node.js", "Application lifecycle, KYC, Offers")
-        Container(loanmgmt, "Loan Management Service", "TypeScript/Node.js", "Disbursement, Schedule, Repayment")
-        Container(collections, "Collections Service", "TypeScript/Node.js", "DPD tracking, Agent actions, Recovery")
-        Container(risk, "AI Risk Engine", "Python/ONNX", "ML Scoring, Fraud Detection, Model Registry")
-        Container(platformsvc, "Platform Services", "TypeScript/Node.js", "Tenant, User, Config, Audit, Notifications")
-        Container(notifications, "Notification Service", "TypeScript/Node.js", "Email, SMS, WhatsApp, In-App")
-        Container(webhooks, "Webhook Manager", "TypeScript/Node.js", "Async Event Delivery")
+flowchart TB
+    subgraph platform["LenderOS Platform"]
+        direction TB
+        web["Web Application\nReact 19, Vite 7, TypeScript\nCustomer-facing and internal portals"]
+        api["API Server\nExpress 5, TypeScript\nREST API, OpenAPI 3.0, Zod validation"]
+        origination["Loan Origination Service\nTypeScript/Node.js\nApplication lifecycle, KYC, Offers"]
+        loanmgmt["Loan Management Service\nTypeScript/Node.js\nDisbursement, Schedule, Repayment"]
+        collections["Collections Service\nTypeScript/Node.js\nDPD tracking, Agent actions, Recovery"]
+        risk["AI Risk Engine\nPython/ONNX\nML Scoring, Fraud Detection, Model Registry"]
+        platformsvc["Platform Services\nTypeScript/Node.js\nTenant, User, Config, Audit, Notifications"]
+        notifications["Notification Service\nTypeScript/Node.js\nEmail, SMS, WhatsApp, In-App"]
+        webhooks["Webhook Manager\nTypeScript/Node.js\nAsync Event Delivery"]
     end
 
-    ContainerDb(db, "PostgreSQL 16", "Primary Data Store", "ACID, Multi-tenant, Row-level Security")
-    ContainerDb(cache, "Redis Cluster", "Cache & Sessions", "L2 Cache, Rate Limiting, Sessions")
-    ContainerDb(search, "Elasticsearch", "Full-text Search", "Customer, Application Search")
-    ContainerDb(analytics, "ClickHouse", "Analytics Warehouse", "OLAP, BI, Regulatory Reporting")
-    Container(queue, "Kafka/Redpanda", "Event Streaming", "Async Processing, Audit Logs")
-    Container(storage, "S3/MinIO", "Object Storage", "Documents, Artifacts, Backups")
+    subgraph datalayer["Data Layer"]
+        db[("PostgreSQL 16\nPrimary Data Store\nACID, Multi-tenant, Row-level Security")]
+        cache[("Redis Cluster\nCache & Sessions\nL2 Cache, Rate Limiting, Sessions")]
+        search[("Elasticsearch\nFull-text Search\nCustomer, Application Search")]
+        analytics[("ClickHouse\nAnalytics Warehouse\nOLAP, BI, Regulatory Reporting")]
+        queue[("Kafka/Redpanda\nEvent Streaming\nAsync Processing, Audit Logs")]
+        storage[("S3/MinIO\nObject Storage\nDocuments, Artifacts, Backups")]
+    end
 
-    Container_Ext(bureau, "Credit Bureaus", "CIBIL, Experian, Equifax")
-    Container_Ext(kyc, "KYC Providers", "Karza, DigiLocker, SignDesk")
-    Container_Ext(payments, "Payment Gateways", "Razorpay, Cashfree, UPI")
-    Container_Ext(comms, "Communication", "Twilio, SendGrid, WhatsApp")
+    subgraph external["External Systems"]
+        bureau["Credit Bureaus\nCIBIL, Experian, Equifax"]
+        kyc["KYC Providers\nKarza, DigiLocker, SignDesk"]
+        payments["Payment Gateways\nRazorpay, Cashfree, UPI"]
+        comms["Communication\nTwilio, SendGrid, WhatsApp"]
+    end
 
-    Rel(web, api, "REST API Calls", "HTTPS/JSON")
-    Rel(api, origination, "Internal API", "gRPC/REST")
-    Rel(api, loanmgmt, "Internal API", "gRPC/REST")
-    Rel(api, collections, "Internal API", "gRPC/REST")
-    Rel(api, risk, "Risk Scoring", "gRPC/Async")
-    Rel(api, platformsvc, "Platform Ops", "gRPC/Internal")
-    Rel(api, notifications, "Async Events", "Kafka/Async")
-    Rel(api, webhooks, "Webhooks", "HTTPS/Async")
-    Rel(origination, db, "Read/Write", "PostgreSQL")
-    Rel(loanmgmt, db, "Read/Write", "PostgreSQL")
-    Rel(collections, db, "Read/Write", "PostgreSQL")
-    Rel(risk, db, "Read/Write", "PostgreSQL")
-    Rel(platformsvc, db, "Read/Write", "PostgreSQL")
-    Rel(platformsvc, cache, "Cache", "Redis Protocol")
-    Rel(origination, bureau, "Credit Reports", "HTTPS/Async")
-    Rel(origination, kyc, "KYC Verification", "HTTPS/Async")
-    Rel(loanmgmt, payments, "Disbursement/Collection", "HTTPS/Async")
-    Rel(api, comms, "Notifications", "Async/Queue")
-    Rel(api, storage, "Documents", "S3 API")
+    %% Relationships
+    web -->|"REST API Calls\nHTTPS/JSON"| api
+    api -->|"Internal API\ngRPC/REST"| origination
+    api -->|"Internal API\ngRPC/REST"| loanmgmt
+    api -->|"Internal API\ngRPC/REST"| collections
+    api -->|"Risk Scoring\ngRPC/Async"| risk
+    api -->|"Platform Ops\ngRPC/Internal"| platformsvc
+    api -->|"Async Events\nKafka/Async"| notifications
+    api -->|"Webhooks\nHTTPS/Async"| webhooks
+    origination -->|"Read/Write\nPostgreSQL"| db
+    loanmgmt -->|"Read/Write\nPostgreSQL"| db
+    collections -->|"Read/Write\nPostgreSQL"| db
+    risk -->|"Read/Write\nPostgreSQL"| db
+    platformsvc -->|"Read/Write\nPostgreSQL"| db
+    platformsvc -->|"Cache\nRedis Protocol"| cache
+    origination -->|"Credit Reports\nHTTPS/Async"| bureau
+    origination -->|"KYC Verification\nHTTPS/Async"| kyc
+    loanmgmt -->|"Disbursement/Collection\nHTTPS/Async"| payments
+    api -->|"Notifications\nAsync/Queue"| comms
+    api -->|"Documents\nS3 API"| storage
 ```
 
 ---
