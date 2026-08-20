@@ -55,9 +55,8 @@ LenderOS is a **multi-tenant, AI-powered lending operating system** — a SaaS p
 7. [API Contract Layer](#api-contract-layer)
 8. [Deployment & Operations](#deployment--operations)
 9. [Monitoring & Observability](#monitoring--observability)
-10. [Security & Compliance](#security--compliance)
+9. [Security & Compliance](#security--compliance)
 10. [Getting Started](#getting-started)
-11. [Roadmap](#roadmap)
 
 ---
 
@@ -214,7 +213,7 @@ C4Context
         System(collections, "Collections", "DPD tracking, Agent actions, Recovery")
         System(risk, "AI Risk Engine", "ML-based scoring, Fraud detection")
         System(db, "PostgreSQL 16", "Primary Data Store")
-    }
+    end
 
     System_Ext(creditbureau, "Credit Bureaus", "CIBIL, Experian, Equifax")
     System_Ext(kyc, "KYC Providers", "Karza, DigiLocker, SignDesk")
@@ -260,7 +259,7 @@ C4Container
         Container(platformsvc, "Platform Services", "TypeScript/Node.js", "Tenant, User, Config, Audit, Notifications")
         Container(notifications, "Notification Service", "TypeScript/Node.js", "Email, SMS, WhatsApp, In-App")
         Container(webhooks, "Webhook Manager", "TypeScript/Node.js", "Async Event Delivery")
-    }
+    end
 
     ContainerDb(db, "PostgreSQL 16", "Primary Data Store", "ACID, Multi-tenant, Row-level Security")
     ContainerDb(cache, "Redis Cluster", "Cache & Sessions", "L2 Cache, Rate Limiting, Sessions")
@@ -701,6 +700,8 @@ erDiagram
         enum aadhaar_status
         enum face_status
         enum employment_status
+        string pan_number
+        string aadhaar_number
         timestamp verified_at
     }
 
@@ -755,6 +756,7 @@ graph TD
 
     SA --> PA
     PA --> TO
+    PA --> TA
     TO --> TA
     TA --> RM
     TA --> LM
@@ -798,7 +800,7 @@ graph TD
 | **Collections** | | | | | | | | | | | | | | |
 | View Collections | ✅ | ✅ | All | Own | All | All | All | All | Assigned | Assigned | Assigned | Own | All | All |
 | Record Action | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ |
-| Record PTP | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ |
+| Record PTP | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ |
 | Escalate | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
 | Legal Action | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ |
 | **Products** | | | | | | | | | | | | | | |
@@ -815,7 +817,6 @@ graph TD
 | **Audit & Compliance** | | | | | | | | | | | | | | |
 | View Audit Logs | ✅ | ✅ | Own | Own | Own | Own | Own | Own | ❌ | ❌ | Own | ❌ | All | All |
 | Export Data | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
-```
 
 ### Permission Implementation (Code)
 
@@ -1003,6 +1004,11 @@ erDiagram
         integer tenure
         decimal interest_rate
         money emi
+        money processing_fee
+        money total_interest
+        money total_repayable
+        decimal approval_probability
+        string disbursement_time
         timestamp expires_at
         boolean is_accepted
     }
@@ -1295,7 +1301,7 @@ export async function healthCheck(): Promise<HealthStatus> {
     name: ['database', 'redis', 'kafka', 'external'][i],
     status: r.status === 'fulfilled' ? 'healthy' : 'unhealthy',
     details: r.status === 'fulfilled' ? r.value : r.reason.message
-  }));
+  });
 
   const overall = results.every(r => r.status === 'healthy') ? 'healthy' : 'degraded';
 
@@ -1418,7 +1424,7 @@ const provider = new NodeTracerProvider({
     [SemanticResourceAttributes.SERVICE_NAME]: 'lendingos-api',
     [SemanticResourceAttributes.DEPLOYMENT_ENVIRONMENT]: process.env.NODE_ENV,
   }),
-});
+);
 
 provider.addSpanProcessor(
   new BatchSpanProcessor(new JaegerExporter({
@@ -1453,40 +1459,40 @@ flowchart TB
 
     subgraph network["Network Security"]
         VPC[VPC / Private Subnets]
-        SG[Security Groups<br/>(Least Privilege)]
+        SG[Security Groups (Least Privilege)]
         NACL[Network ACLs]
-        PrivateLink[AWS PrivateLink /<br/>VPC Endpoints]
+        PrivateLink[AWS PrivateLink / VPC Endpoints]
     end
 
     subgraph appsec["Application Security"]
-        SAST[SAST/DAST<br/>(GitLab SAST, Semgrep)]
-        SCA[SCA<br/>(Dependabot, Snyk)]
-        Secrets[Secrets Scanning<br/>(TruffleHog, GitLeaks)]
-        DAST[DAST<br/>(OWASP ZAP)]
-        WAF_App[App WAF<br/>(ModSecurity)]
+        SAST[SAST/DAST (GitLab SAST, Semgrep)]
+        SCA[SCA (Dependabot, Snyk)]
+        Secrets[Secrets Scanning (TruffleHog, GitLeaks)]
+        DAST[DAST (OWASP ZAP)]
+        WAF_App[App WAF (ModSecurity)]
     end
 
     subgraph data["Data Protection"]
-        EncryptionAtRest[AES-256<br/>(AWS KMS / HashiCorp Vault)]
-        EncryptionInTransit[TLS 1.3<br/>(mTLS for Internal)]
-        PII_Masking[PII Masking<br/>(Tokenization)]
-        DLP[DLP Rules<br/>(Regex + ML)]
-        KeyRotation[Automated Key Rotation<br/>(90 days)]
+        EncryptionAtRest[AES-256 (AWS KMS / HashiCorp Vault)]
+        EncryptionInTransit[TLS 1.3 (mTLS for Internal)]
+        PII_Masking[PII Masking (Tokenization)]
+        DLP[DLP Rules (Regex + ML)]
+        KeyRotation[Automated Key Rotation (90 days)]
     end
 
     subgraph identity["Identity & Access"]
-        SSO[SSO (SAML/OIDC)<br/>(Okta, Azure AD)]
-        MFA[MFA Enforcement<br/>(TOTP, WebAuthn)]
-        PAM[PAM<br/>(CyberArk/BeyondTrust)]
-        JIT[JIT Access<br/>(Teleport/Teleport)]
-        RBAC[RBAC + ABAC<br/>(OPA/Gatekeeper)]
+        SSO[SSO (SAML/OIDC) (Okta, Azure AD)]
+        MFA[MFA Enforcement (TOTP, WebAuthn)]
+        PAM[PAM (CyberArk/BeyondTrust)]
+        JIT[JIT Access (Teleport/Teleport)]
+        RBAC[RBAC + ABAC (OPA/Gatekeeper)]
     end
 
     subgraph audit["Audit & Compliance"]
-        ImmutableLogs[Immutable Audit Logs<br/>(Append-only, S3 + QLDB)]
-        SIEM[SIEM<br/>(Splunk/Elastic)]
-        SOAR[SOAR<br/>(Cortex XSOAR)]
-        ComplianceReports[Automated Reports<br/>(RBI, GDPR, PCI-DSS)]
+        ImmutableLogs[Immutable Audit Logs (Append-only, S3 + QLDB)]
+        SIEM[SIEM (Splunk/Elastic)]
+        SOAR[SOAR (Cortex XSOAR)]
+        ComplianceReports[Automated Reports (RBI, GDPR, PCI-DSS)]
     end
 ```
 
@@ -1588,96 +1594,6 @@ helm upgrade --install lendingos ./helm/lendingos \
   --set ingress.enabled=true \
   --set postgresql.persistence.size=100Gi
 ```
-
----
-
-## Roadmap
-
-### Q1 2025 (Current)
-- [x] Multi-tenant Architecture
-- [x] AI Risk Engine (v1)
-- [x] Loan Origination Flow
-- [x] Collections Management
-- [x] KYC Integration
-- [x] Demo Mode & Role Switcher
-
-### Q2 2025
-- [ ] **Customer Detail Page** - Full 360 view
-- [ ] **Loan Schedule Page** - Amortization, prepayment
-- [ ] **Settings Page** - Real API integration
-- [ ] **User Management (Super Admin)** - CRUD + Roles
-- [ ] **KYC Pages** - PAN, Aadhaar, Face, Employment
-- [ ] **Loan Schedule Page** - Amortization table
-
-### Q3 2025
-- [ ] **Offer & Acceptance Flow** - Customer-facing
-- [ ] **Disbursement Workflow** - Payment gateway integration
-- [ ] **Loan Restructuring** - Reschedule, moratorium
-- [ ] **Advanced Collections** - Legal, recovery tracking
-- [ ] **Webhook System** - Async event delivery
-
-### Q4 2025
-- [ ] **AI Risk Engine v2** - Graph NN, alternative data
-- [ ] **Mobile App** - React Native
-- [ ] **White-label Theming** - Per-tenant branding
-- [ ] **Multi-currency Support** - INR, USD, EUR
-- [ ] **Advanced Analytics** - Cohort, cohort, predictive
-
-### 2026+
-- [ ] **Multi-region Deployment** - Active-Active
-- [ ] **Federated Learning** - Cross-tenant model training
-- [ ] **Blockchain Settlement** - Smart contract disbursement
-- [ ] **GenAI Assistant** - Underwriter copilot
-- [ ] **Marketplace** - Lender-borrower marketplace
-
----
-
-## Contributing
-
-```bash
-# 1. Fork & Clone
-git clone https://github.com/your-org/LenderOS.git
-
-# 2. Create Feature Branch
-git checkout -b feat/amazing-feature
-
-# 3. Make Changes
-# - Follow Conventional Commits
-# - Add tests for new features
-# - Update documentation
-
-# 4. Quality Gates
-pnpm typecheck    # TypeScript strict
-pnpm lint         # ESLint + Prettier
-pnpm test         # Unit + Integration
-
-# 5. Submit PR
-# - Link related issue
-# - Add screenshots for UI changes
-# - Request review from CODEOWNERS
-```
-
-### Code Standards
-
-| Tool | Config |
-|------|--------|
-| TypeScript | `strict: true`, `noUncheckedIndexedAccess` |
-| ESLint | `airbnb-typescript` + `prettier` |
-| Prettier | `singleQuote: true`, `tabWidth: 2` |
-| Husky | Pre-commit: lint + typecheck |
-| Commitlint | Conventional Commits |
-
----
-
-## Support & Community
-
-| Channel | Purpose |
-|--------|---------|
-| 📧 **Email** | support@lendingos.example.com |
-| 💬 **Slack** | #lendingos-community |
-| 🐛 **Issues** | [GitHub Issues](https://github.com/chahalbaljinder/LenderOS/issues) |
-| 📖 **Docs** | [docs.lendingos.example.com](https://docs.lendingos.example.com) |
-| 🐦 **Twitter** | [@LenderOS](https://twitter.com/LenderOS) |
 
 ---
 
